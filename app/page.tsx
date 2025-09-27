@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Zap, Plus, X, ShieldBan } from "lucide-react";
+import { Zap, X, ShieldBan } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -68,7 +68,7 @@ export default function Home() {
               className="flex-1 bg-white/70"
             />
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <Button
                   onClick={addUrl}
                   size="sm"
@@ -90,7 +90,7 @@ export default function Home() {
               <h3 className="text-sm font-medium text-gray-600">
                 Blocked Websites
               </h3>
-              <div className="flex flex-wrap gap-2 rounded-md border px-2.5 py-2">
+              <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
                 {blockedUrls.map((url, index) => (
                   <Badge
                     key={index}
@@ -99,17 +99,17 @@ export default function Home() {
                   >
                     <span className="text-xs">{url}</span>
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger asChild>
                         <button
                           onClick={() => removeUrl(url)}
-                          className="hover:text-destructive ml-1 cursor-pointer"
+                          className="hover:text-destructive ml-1 cursor-pointer rounded-sm p-0.5"
                         >
                           <X className="h-3 w-3" />
                         </button>
-                        <TooltipContent>
-                          <p>Unblock</p>
-                        </TooltipContent>
                       </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Unblock</p>
+                      </TooltipContent>
                     </Tooltip>
                   </Badge>
                 ))}

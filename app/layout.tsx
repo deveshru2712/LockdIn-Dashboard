@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Overlay from "@/components/Overlay";
+import { ReactLenis } from "@/utils/lenis";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,13 +30,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${inter.className} ${jakarta.variable} overflow-hidden antialiased`}
-      >
-        <Overlay />
-        <div className="relative z-10">{children}</div>
-      </body>
+    <html lang="en" suppressHydrationWarning>
+      <ReactLenis root>
+        <body
+          className={`${geistSans.variable} ${inter.className} ${jakarta.variable} overflow-hidden antialiased`}
+        >
+          <Overlay />
+          <div className="relative z-10">{children}</div>
+        </body>
+      </ReactLenis>
     </html>
   );
 }
