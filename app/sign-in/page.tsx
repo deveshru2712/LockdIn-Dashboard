@@ -1,6 +1,6 @@
-import LoginForm from "@/components/auth/sign-in";
-import { UserLock } from "lucide-react";
 import React from "react";
+import AuthCard from "@/components/auth/AuthCard";
+import { UserLock } from "lucide-react";
 
 export default function page() {
   return (
@@ -12,7 +12,7 @@ export default function page() {
           </div>
           Lock In.
         </h1>
-        <LoginForm />
+        <AuthCard />
       </div>
     </div>
   );

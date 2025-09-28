@@ -13,6 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import FloatingMenu from "@/components/FloatingMenu";
 
 export default function Home() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
@@ -43,11 +44,10 @@ export default function Home() {
           className="border-slate-200 px-2 py-1.5 shadow backdrop-blur-sm"
         >
           <Zap color="lightblue" />
-          <span className="ml-1 text-lg text-shadow-2xs">
+          <span className="ml-1 text-base font-medium text-shadow-2xs">
             Reclaim Your Focus
           </span>
         </Badge>
-
         <div className="space-y-8 text-center font-sans">
           <h1 className="text-5xl font-bold tracking-tight text-gray-900">
             Ready to Lock In ?
@@ -56,7 +56,6 @@ export default function Home() {
             Block distracting websites and reclaim your productivity
           </p>
         </div>
-
         <div className="font-jakarta w-full max-w-lg space-y-6">
           <div className="flex gap-2">
             <Input
@@ -117,6 +116,9 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* floating menu */}
+        <FloatingMenu />
 
         <div className="max-w-lg space-y-6 text-center">
           <p className="leading-relaxed font-medium text-gray-600">

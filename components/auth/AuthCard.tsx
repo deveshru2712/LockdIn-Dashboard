@@ -1,3 +1,4 @@
+"use client";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,10 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import EmailForm from "./form";
 import Image from "next/image";
+import EmailForm from "./form";
+import { signIn } from "@/lib/auth/auth-client";
 
-export default function LoginForm({
+export default function AuthCard({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
@@ -27,7 +29,11 @@ export default function LoginForm({
         <CardContent>
           <div className="grid gap-6">
             <div className="font-medium">
-              <Button variant="outline" className="w-full cursor-pointer">
+              <Button
+                variant="outline"
+                onClick={() => signIn()}
+                className="w-full cursor-pointer"
+              >
                 <Image
                   src={"/google.png"}
                   alt="google"
