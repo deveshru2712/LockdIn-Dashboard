@@ -22,7 +22,7 @@ export default function FloatingMenu() {
   };
 
   return (
-    <div className="fixed right-10 bottom-20 z-50">
+    <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

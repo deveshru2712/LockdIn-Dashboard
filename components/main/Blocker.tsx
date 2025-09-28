@@ -176,9 +176,6 @@ export default function Blocker() {
           </div>
         )}
       </div>
-
-      {/* floating menu */}
-      <FloatingMenu />
     </>
   );
 }

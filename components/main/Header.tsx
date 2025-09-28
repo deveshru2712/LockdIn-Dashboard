@@ -15,7 +15,7 @@ const Header = () => {
         </span>
       </Badge>
       <div className="space-y-8 text-center font-sans">
-        <h1 className="text-5xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
           Ready to Lock In ?
         </h1>
         <p className="mx-auto max-w-md text-lg leading-relaxed font-medium text-gray-700">
