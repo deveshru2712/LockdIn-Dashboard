@@ -14,10 +14,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import FloatingMenu from "@/components/FloatingMenu";
+import { authClient } from "@/lib/auth/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
   const [inputUrl, setInputUrl] = useState("");
+
+  const { data: session } = authClient.useSession();
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (session?.user) {
+      addUrl();
+    } else {
+      router.push("/sign-in");
+    }
+  };
 
   const addUrl = () => {
     if (inputUrl.trim() && !blockedUrls.includes(inputUrl.trim())) {
@@ -69,7 +82,7 @@ export default function Home() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  onClick={addUrl}
+                  onClick={handleClick}
                   size="sm"
                   className="cursor-pointer px-3"
                 >

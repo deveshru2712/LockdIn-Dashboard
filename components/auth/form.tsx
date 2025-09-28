@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Button } from "../ui/button";
+import { authClient } from "@/lib/auth/auth-client";
 
 const formSchema = z.object({
   email: z
@@ -36,8 +37,14 @@ export default function EmailForm() {
     mode: "onSubmit",
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const { data, error } = await authClient.signUp.email({
+      name: values.email.split("@")[0],
+      email: values.email,
+      password: values.password,
+      // image: "https://example.com/image.png",
+      callbackURL: "/",
+    });
   };
 
   return (
