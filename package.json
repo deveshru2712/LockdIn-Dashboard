@@ -9,6 +9,9 @@
     "lint": "biome check",
     "format": "biome format --write"
   },
+  "prisma": {
+    "seed": "node prisma/seed.ts"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.16.2",

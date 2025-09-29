@@ -88,3 +88,14 @@ model BlockedWebsite {
   @@unique([userId, url])
   @@map("blocked_websites")
 }
+
+model PredefinedWebsite {
+  id        String   @id @default(cuid())
+  name      String   
+  url       String   
+  domain    String   
+  createdAt DateTime @default(now())
+  
+  @@unique([url])
+  @@map("predefined_websites")
+}
