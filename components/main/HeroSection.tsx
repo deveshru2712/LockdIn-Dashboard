@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "motion/react";
-import Blocker from "./Blocker";
+import Blocker from "./Blocker/Blocker";
 import Footer from "./Footer";
 import Header from "./Header";
 import FloatingMenu from "../FloatingMenu";
