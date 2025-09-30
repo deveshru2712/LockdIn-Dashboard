@@ -36,6 +36,16 @@ export default function Blocker() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!session?.user) {
+      const storedBlockedWebsites = localStorage.getItem("blocked-website");
+      if (storedBlockedWebsites) {
+        const blockedWebsites = JSON.parse(storedBlockedWebsites);
+        setBlockedUrls(blockedWebsites);
+      }
+    }
+  }, [session?.user]);
+
+  useEffect(() => {
     const fetchFrequentlyBlockedWebsite = async () => {
       setIsLoading(true);
       setError(null);
@@ -89,11 +99,7 @@ export default function Blocker() {
   };
 
   const handleClick = () => {
-    if (session?.user) {
-      addUrl();
-    } else {
-      router.push("/sign-in");
-    }
+    addUrl();
   };
 
   const addUrl = () => {
@@ -115,14 +121,40 @@ export default function Blocker() {
       return;
     }
 
-    setBlockedUrls([...blockedUrls, normalizedUrl]);
-    setInputUrl("");
-    setShowSuggestions(false);
-    setError(null);
+    if (session?.user) {
+      // make a db call
+    } else {
+      // store it in localstorage
+      setBlockedUrls([...blockedUrls, normalizedUrl]);
+      localStorage.setItem(
+        "blocked-website",
+        JSON.stringify([...blockedUrls, normalizedUrl]),
+      );
+      setInputUrl("");
+      setShowSuggestions(false);
+      setError(null);
+    }
   };
 
   const removeUrl = (urlToRemove: string) => {
-    setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
+    if (session?.user) {
+      // make a db call
+      // setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
+    } else {
+      setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
+
+      const storedBlockedWebsites = localStorage.getItem("blocked-website");
+      if (storedBlockedWebsites) {
+        const blockedWebsites = JSON.parse(storedBlockedWebsites);
+        const filteredWebsites = blockedWebsites.filter(
+          (url: string) => url !== urlToRemove,
+        );
+        localStorage.setItem(
+          "blocked-website",
+          JSON.stringify(filteredWebsites),
+        );
+      }
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -141,9 +173,18 @@ export default function Blocker() {
       setBlockedUrls([...blockedUrls, normalizedUrl]);
     }
 
-    setInputUrl("");
-    setShowSuggestions(false);
-    inputRef.current?.focus();
+    if (session?.user) {
+      // make a db call
+    } else {
+      localStorage.setItem(
+        "blocked-website",
+        JSON.stringify([...blockedUrls, normalizedUrl]),
+      );
+
+      setInputUrl("");
+      setShowSuggestions(false);
+      inputRef.current?.focus();
+    }
   };
 
   const handleInputFocus = () => {
@@ -193,12 +234,12 @@ export default function Blocker() {
                 {isLoading ? (
                   <Loader2 size={28} className="animate-spin" />
                 ) : (
-                  <ShieldBan size={28} />
+                  <ShieldBan size={28} className="cursor-pointer" />
                 )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{session?.user ? "Block" : "Sign in to block"}</p>
+              <p>Block</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -270,7 +311,7 @@ export default function Blocker() {
                       className="hover:text-destructive ml-1 rounded-sm p-0.5"
                       aria-label={`Unblock ${url}`}
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-3 w-3 cursor-pointer" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
