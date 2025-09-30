@@ -35,8 +35,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${inter.className} ${jakarta.variable} overflow-hidden antialiased`}
       >
         <Overlay />
-        <Toaster />
         <div className="relative z-10">{children}</div>
+        <Toaster />
       </body>
     </html>
   );

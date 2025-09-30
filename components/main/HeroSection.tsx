@@ -46,7 +46,7 @@ export default function HeroSection() {
 
       {/* floating menu */}
       <motion.div
-        className="fixed right-10 bottom-10"
+        className="fixed right-10 bottom-25"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 1, ease: "easeOut" }}

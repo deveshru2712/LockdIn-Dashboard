@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
+import { motion } from "motion/react";
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
@@ -14,10 +15,14 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { authClient } from "@/lib/auth/auth-client";
 import {
+  addWebsiteToBlockedList,
   FrequentlyBlockedWebsite,
   getCachedMostFrequentlyBlockedSites,
+  getCachedUserBlockedUrl,
+  removeWebsiteFromBlockedList,
 } from "./actions";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Blocker() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
@@ -28,6 +33,7 @@ export default function Blocker() {
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showBlockedContainer, setShowBlockedContainer] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -35,18 +41,36 @@ export default function Blocker() {
   const { data: session } = authClient.useSession();
   const router = useRouter();
 
+  // useEffect to fetch user blocked website
   useEffect(() => {
-    if (!session?.user) {
+    if (session?.user) {
+      const getUserBlockedWebsite = async () => {
+        const result = await getCachedUserBlockedUrl(session.user.id);
+        if (result) {
+          setBlockedUrls(result);
+          // Start timer to show container after 1 second
+          const timer = setTimeout(() => {
+            setShowBlockedContainer(true);
+          }, 1000);
+          return () => clearTimeout(timer);
+        }
+      };
+      getUserBlockedWebsite();
+    } else {
       const storedBlockedWebsites = localStorage.getItem("blocked-website");
       if (storedBlockedWebsites) {
         const blockedWebsites = JSON.parse(storedBlockedWebsites);
         setBlockedUrls(blockedWebsites);
+        // Start timer to show container after 1 second
+        const timer = setTimeout(() => {
+          setShowBlockedContainer(true);
+        }, 1000);
+        return () => clearTimeout(timer);
       }
-    } else {
-      // make a db call here
     }
   }, [session?.user]);
 
+  // useEffect to get frequently blocked website
   useEffect(() => {
     const fetchFrequentlyBlockedWebsite = async () => {
       setIsLoading(true);
@@ -68,6 +92,7 @@ export default function Blocker() {
     fetchFrequentlyBlockedWebsite();
   }, []);
 
+  // useEffect to close the suggestion pannel
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -104,7 +129,7 @@ export default function Blocker() {
     return { isValid, normalized };
   };
 
-  const addUrl = () => {
+  const addUrl = async () => {
     const trimmedUrl = inputUrl.trim();
 
     if (!trimmedUrl) {
@@ -124,9 +149,15 @@ export default function Blocker() {
     }
 
     if (session?.user) {
-      // make a db call
+      setBlockedUrls([...blockedUrls, normalized]);
+      await addWebsiteToBlockedList(normalized);
+      toast.success("Website blocked ✅");
+      setInputUrl("");
+      setShowSuggestions(false);
+      setError(null);
     } else {
-      // store it in localstorage
+      // storeing it in localstorage for non-logged in user
+
       setBlockedUrls([...blockedUrls, normalized]);
       localStorage.setItem(
         "blocked-website",
@@ -138,10 +169,10 @@ export default function Blocker() {
     }
   };
 
-  const removeUrl = (urlToRemove: string) => {
+  const removeUrl = async (urlToRemove: string) => {
     if (session?.user) {
-      // make a db call
-      // setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
+      setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
+      await removeWebsiteFromBlockedList(urlToRemove);
     } else {
       setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
 
@@ -291,8 +322,13 @@ export default function Blocker() {
       </div>
 
       {/* Container for blocked URLs */}
-      {blockedUrls.length > 0 && (
-        <div className="space-y-3">
+      {blockedUrls.length > 0 && showBlockedContainer && (
+        <motion.div
+          initial={{ opacity: 0, filter: `blur(10px)` }}
+          animate={{ opacity: 1, filter: `blur(0px)` }}
+          transition={{ duration: 0.3 }}
+          className="space-y-3"
+        >
           <Separator />
           <h3 className="text-sm font-medium text-gray-600">
             Blocked Websites ({blockedUrls.length})
@@ -322,7 +358,7 @@ export default function Blocker() {
               </Badge>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -77,7 +77,6 @@ model Verification {
 model BlockedWebsite {
   id        String   @id @default(cuid())
   url       String
-  domain    String   
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

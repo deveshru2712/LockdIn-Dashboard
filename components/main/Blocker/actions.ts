@@ -1,12 +1,14 @@
 "use server";
+import { getSession } from "@/lib/auth/utils";
 import { prisma } from "@/lib/db/prisma";
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 export interface FrequentlyBlockedWebsite {
   name: string;
   url: string;
 }
 
+// get the most frequent blocked website
 const getMostFrequentlyBlockedSitesInternal = async (): Promise<
   FrequentlyBlockedWebsite[] | null
 > => {
@@ -29,7 +31,87 @@ export const getCachedMostFrequentlyBlockedSites = unstable_cache(
   getMostFrequentlyBlockedSitesInternal,
   ["most-frequently-blocked-sites"],
   {
-    revalidate: 3600, // 1 hour
+    revalidate: 36000, // 10 hour
     tags: ["frequently-blocked-websites"],
+  },
+);
+
+// adding a new url to blocked list
+export const addWebsiteToBlockedList = async (url: string) => {
+  try {
+    const session = await getSession();
+
+    if (!session?.user) {
+      return null;
+    }
+
+    const blockedWebsite = await prisma.blockedWebsite.create({
+      data: {
+        url,
+        isActive: true,
+        userId: session.user.id,
+      },
+    });
+
+    // revalidating the user blocked website
+    revalidateTag("user-blocked-website");
+
+    return blockedWebsite;
+  } catch (error) {
+    console.error("Error adding blocked website:", error);
+    return null;
+  }
+};
+
+// remove an blocked url from the list
+export const removeWebsiteFromBlockedList = async (url: string) => {
+  try {
+    const session = await getSession();
+
+    if (!session?.user) {
+      return null;
+    }
+
+    await prisma.blockedWebsite.delete({
+      where: {
+        userId_url: {
+          userId: session.user.id,
+          url: url,
+        },
+      },
+    });
+
+    revalidateTag("user-blocked-website");
+  } catch (error) {
+    console.error("Error removing blocked website:", error);
+    return null;
+  }
+};
+
+// get the user blocked url
+const getUserBlockedUrl = async (userId: string): Promise<string[] | null> => {
+  if (!userId) {
+    return null;
+  }
+
+  try {
+    const response = await prisma.blockedWebsite.findMany({
+      where: { userId: userId },
+      select: { url: true },
+    });
+
+    return response.map((item) => item.url);
+  } catch (error) {
+    console.log("Unable to fetch the user blocked url");
+    return null;
+  }
+};
+
+export const getCachedUserBlockedUrl = unstable_cache(
+  async (userId: string) => getUserBlockedUrl(userId),
+  ["blocked-website"],
+  {
+    revalidate: 3600,
+    tags: [`user-blocked-website`],
   },
 );
