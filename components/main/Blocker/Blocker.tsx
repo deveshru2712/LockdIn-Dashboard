@@ -42,6 +42,8 @@ export default function Blocker() {
         const blockedWebsites = JSON.parse(storedBlockedWebsites);
         setBlockedUrls(blockedWebsites);
       }
+    } else {
+      // make a db call here
     }
   }, [session?.user]);
 
@@ -82,24 +84,24 @@ export default function Blocker() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const validateUrl = (url: string): boolean => {
+  const validateAndNormalizeUrl = (
+    url: string,
+  ): { isValid: boolean; normalized: string } => {
+    const trimmed = url.trim();
+
     // Basic URL validation - allows domains with or without protocol
     const urlPattern =
       /^(?:https?:\/\/)?(?:www\.)?[\w-]+(?:\.[\w-]+)+(?:\/.*)?$/;
-    return urlPattern.test(url);
-  };
+    const isValid = urlPattern.test(trimmed);
 
-  const normalizeUrl = (url: string): string => {
     // Remove protocol and www. for consistent storage
-    return url
+    const normalized = trimmed
       .replace(/^https?:\/\//, "")
       .replace(/^www\./, "")
       .toLowerCase()
       .trim();
-  };
 
-  const handleClick = () => {
-    addUrl();
+    return { isValid, normalized };
   };
 
   const addUrl = () => {
@@ -109,14 +111,14 @@ export default function Blocker() {
       return;
     }
 
-    if (!validateUrl(trimmedUrl)) {
+    const { isValid, normalized } = validateAndNormalizeUrl(trimmedUrl);
+
+    if (!isValid) {
       setError("Please enter a valid URL (e.g., facebook.com)");
       return;
     }
 
-    const normalizedUrl = normalizeUrl(trimmedUrl);
-
-    if (blockedUrls.includes(normalizedUrl)) {
+    if (blockedUrls.includes(normalized)) {
       setError("This website is already blocked");
       return;
     }
@@ -125,10 +127,10 @@ export default function Blocker() {
       // make a db call
     } else {
       // store it in localstorage
-      setBlockedUrls([...blockedUrls, normalizedUrl]);
+      setBlockedUrls([...blockedUrls, normalized]);
       localStorage.setItem(
         "blocked-website",
-        JSON.stringify([...blockedUrls, normalizedUrl]),
+        JSON.stringify([...blockedUrls, normalized]),
       );
       setInputUrl("");
       setShowSuggestions(false);
@@ -167,10 +169,10 @@ export default function Blocker() {
   };
 
   const handleSuggestionClick = (url: string) => {
-    const normalizedUrl = normalizeUrl(url);
+    const { normalized } = validateAndNormalizeUrl(url);
 
-    if (!blockedUrls.includes(normalizedUrl)) {
-      setBlockedUrls([...blockedUrls, normalizedUrl]);
+    if (!blockedUrls.includes(normalized)) {
+      setBlockedUrls([...blockedUrls, normalized]);
     }
 
     if (session?.user) {
@@ -178,7 +180,7 @@ export default function Blocker() {
     } else {
       localStorage.setItem(
         "blocked-website",
-        JSON.stringify([...blockedUrls, normalizedUrl]),
+        JSON.stringify([...blockedUrls, normalized]),
       );
 
       setInputUrl("");
@@ -225,7 +227,7 @@ export default function Blocker() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                onClick={handleClick}
+                onClick={addUrl}
                 size="sm"
                 className="px-3"
                 disabled={isLoading || !inputUrl.trim()}
@@ -259,9 +261,8 @@ export default function Blocker() {
                 </p>
                 <div className="space-y-1">
                   {frequentlyBlockedWebsite.map((website) => {
-                    const normalizedUrl = normalizeUrl(website.url);
-                    const isAlreadyBlocked =
-                      blockedUrls.includes(normalizedUrl);
+                    const { normalized } = validateAndNormalizeUrl(website.url);
+                    const isAlreadyBlocked = blockedUrls.includes(normalized);
 
                     return (
                       <button
