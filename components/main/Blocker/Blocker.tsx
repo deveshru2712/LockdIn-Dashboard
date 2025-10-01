@@ -199,7 +199,7 @@ export default function Blocker() {
     }
   };
 
-  const handleSuggestionClick = (url: string) => {
+  const handleSuggestionClick = async (url: string) => {
     const { normalized } = validateAndNormalizeUrl(url);
 
     if (!blockedUrls.includes(normalized)) {
@@ -207,7 +207,12 @@ export default function Blocker() {
     }
 
     if (session?.user) {
-      // make a db call
+      setBlockedUrls([...blockedUrls, normalized]);
+      await addWebsiteToBlockedList(normalized);
+      toast.success("Website blocked ✅");
+      setInputUrl("");
+      setShowSuggestions(false);
+      setError(null);
     } else {
       localStorage.setItem(
         "blocked-website",
