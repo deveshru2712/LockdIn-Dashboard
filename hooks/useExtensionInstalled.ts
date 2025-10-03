@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 
 export function useExtensionInstalled() {
-  const [installed, setInstalled] = useState(
-    !!window.__BLOCKER_EXTENSION_INSTALLED,
-  );
+  const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    const handler = () => setInstalled(true);
-    window.addEventListener("blocker-extension-installed", handler);
-    return () =>
-      window.removeEventListener("blocker-extension-installed", handler);
+    if (typeof window !== "undefined") {
+      setInstalled(!!window.__BLOCKER_EXTENSION_INSTALLED);
+    }
   }, []);
 
   return installed;
