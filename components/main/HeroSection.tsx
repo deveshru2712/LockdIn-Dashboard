@@ -4,8 +4,12 @@ import Blocker from "./Blocker/Blocker";
 import Footer from "./Footer";
 import Header from "./Header";
 import FloatingMenu from "../FloatingMenu";
+import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
+import { Button } from "../ui/button";
 
 export default function HeroSection() {
+  const installed = useExtensionInstalled();
+
   return (
     <div className="flex h-screen w-full items-center justify-center">
       <motion.div
@@ -32,7 +36,19 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <Blocker />
+          {installed ? (
+            <Blocker />
+          ) : (
+            <div className="flex w-full items-center justify-center">
+              <Button
+                size="lg"
+                aria-label="Install browser extension"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/80 cursor-pointer px-6 py-3 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+              >
+                Install extension
+              </Button>
+            </div>
+          )}
         </motion.div>
 
         <motion.div
