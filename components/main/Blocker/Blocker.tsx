@@ -21,8 +21,8 @@ import {
   getCachedUserBlockedUrl,
   removeWebsiteFromBlockedList,
 } from "./actions";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import sendBlockedSitesToExtension from "@/utils/sendBlockedSitesToExtension"; // 👈 extension sync helper
 
 export default function Blocker() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
@@ -37,51 +37,15 @@ export default function Blocker() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-
   const { data: session } = authClient.useSession();
-  const router = useRouter();
 
-  // useEffect to fetch user blocked website
-  useEffect(() => {
-    if (session?.user) {
-      const getUserBlockedWebsite = async () => {
-        const result = await getCachedUserBlockedUrl(session.user.id);
-        if (result) {
-          setBlockedUrls(result);
-          // Start timer to show container after 1 second
-          const timer = setTimeout(() => {
-            setShowBlockedContainer(true);
-          }, 1000);
-          return () => clearTimeout(timer);
-        }
-      };
-      getUserBlockedWebsite();
-    } else {
-      const storedBlockedWebsites = localStorage.getItem("blocked-website");
-      if (storedBlockedWebsites) {
-        const blockedWebsites = JSON.parse(storedBlockedWebsites);
-        setBlockedUrls(blockedWebsites);
-        // Start timer to show container after 1 second
-        const timer = setTimeout(() => {
-          setShowBlockedContainer(true);
-        }, 1000);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [session?.user]);
-
-  // useEffect to get frequently blocked website
+  //  frequently blocked sites
   useEffect(() => {
     const fetchFrequentlyBlockedWebsite = async () => {
       setIsLoading(true);
-      setError(null);
       try {
         const result = await getCachedMostFrequentlyBlockedSites();
-        if (result) {
-          setFrequentlyBlockedWebsite(result);
-        } else {
-          setError("Unable to load website suggestions");
-        }
+        if (result) setFrequentlyBlockedWebsite(result);
       } catch (err) {
         console.error("Error fetching frequently blocked websites:", err);
         setError("Failed to load suggestions");
@@ -92,7 +56,23 @@ export default function Blocker() {
     fetchFrequentlyBlockedWebsite();
   }, []);
 
-  // useEffect to close the suggestion pannel
+  // Fetching user blocked websites
+  useEffect(() => {
+    const loadBlockedSites = async () => {
+      if (session?.user) {
+        const result = await getCachedUserBlockedUrl(session.user.id);
+        if (result) setBlockedUrls(result);
+      } else {
+        const stored = localStorage.getItem("blocked-website");
+        if (stored) setBlockedUrls(JSON.parse(stored));
+      }
+
+      setTimeout(() => setShowBlockedContainer(true), 1000);
+    };
+    loadBlockedSites();
+  }, [session?.user]);
+
+  // suggestion dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -104,40 +84,35 @@ export default function Blocker() {
         setShowSuggestions(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const validateAndNormalizeUrl = (
+  const grabDomainUrl = (
     url: string,
   ): { isValid: boolean; normalized: string } => {
-    const trimmed = url.trim();
+    let trimmed = url.trim();
 
-    // Basic URL validation - allows domains with or without protocol
-    const urlPattern =
-      /^(?:https?:\/\/)?(?:www\.)?[\w-]+(?:\.[\w-]+)+(?:\/.*)?$/;
-    const isValid = urlPattern.test(trimmed);
+    if (!/^https?:\/\//i.test(trimmed)) {
+      trimmed = "https://" + trimmed;
+    }
 
-    // Remove protocol and www. for consistent storage
-    const normalized = trimmed
-      .replace(/^https?:\/\//, "")
-      .replace(/^www\./, "")
-      .toLowerCase()
-      .trim();
-
-    return { isValid, normalized };
+    try {
+      const { hostname } = new URL(trimmed);
+      const parts = hostname.split(".");
+      const normalized =
+        parts.length > 2 ? parts.slice(-2).join(".") : hostname;
+      return { isValid: true, normalized };
+    } catch {
+      return { isValid: false, normalized: "" };
+    }
   };
 
   const addUrl = async () => {
     const trimmedUrl = inputUrl.trim();
+    if (!trimmedUrl) return;
 
-    if (!trimmedUrl) {
-      return;
-    }
-
-    const { isValid, normalized } = validateAndNormalizeUrl(trimmedUrl);
-
+    const { isValid, normalized } = grabDomainUrl(trimmedUrl);
     if (!isValid) {
       setError("Please enter a valid URL (e.g., facebook.com)");
       return;
@@ -148,45 +123,45 @@ export default function Blocker() {
       return;
     }
 
-    if (session?.user) {
-      setBlockedUrls([...blockedUrls, normalized]);
-      await addWebsiteToBlockedList(normalized);
+    const updatedList = [...blockedUrls, normalized];
+    setBlockedUrls(updatedList);
+
+    try {
+      if (session?.user) {
+        await addWebsiteToBlockedList(normalized);
+      } else {
+        localStorage.setItem("blocked-website", JSON.stringify(updatedList));
+      }
+
       toast.success("Website blocked ✅");
       setInputUrl("");
       setShowSuggestions(false);
       setError(null);
-    } else {
-      // storeing it in localstorage for non-logged in user
 
-      setBlockedUrls([...blockedUrls, normalized]);
-      localStorage.setItem(
-        "blocked-website",
-        JSON.stringify([...blockedUrls, normalized]),
-      );
-      setInputUrl("");
-      setShowSuggestions(false);
-      setError(null);
+      // 🔄 Sync to extension
+      await sendBlockedSitesToExtension(updatedList);
+    } catch (err) {
+      console.error("Failed to add site:", err);
     }
   };
 
   const removeUrl = async (urlToRemove: string) => {
-    if (session?.user) {
-      setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
-      await removeWebsiteFromBlockedList(urlToRemove);
-    } else {
-      setBlockedUrls(blockedUrls.filter((url) => url !== urlToRemove));
+    const updatedList = blockedUrls.filter((url) => url !== urlToRemove);
+    setBlockedUrls(updatedList);
 
-      const storedBlockedWebsites = localStorage.getItem("blocked-website");
-      if (storedBlockedWebsites) {
-        const blockedWebsites = JSON.parse(storedBlockedWebsites);
-        const filteredWebsites = blockedWebsites.filter(
-          (url: string) => url !== urlToRemove,
-        );
-        localStorage.setItem(
-          "blocked-website",
-          JSON.stringify(filteredWebsites),
-        );
+    try {
+      if (session?.user) {
+        await removeWebsiteFromBlockedList(urlToRemove);
+      } else {
+        localStorage.setItem("blocked-website", JSON.stringify(updatedList));
       }
+
+      toast.success("Website unblocked ✅");
+
+      // 🔄 Sync to extension
+      await sendBlockedSitesToExtension(updatedList);
+    } catch (err) {
+      console.error("Failed to remove site:", err);
     }
   };
 
@@ -200,29 +175,24 @@ export default function Blocker() {
   };
 
   const handleSuggestionClick = async (url: string) => {
-    const { normalized } = validateAndNormalizeUrl(url);
+    const { normalized } = grabDomainUrl(url);
+    if (blockedUrls.includes(normalized)) return;
 
-    if (!blockedUrls.includes(normalized)) {
-      setBlockedUrls([...blockedUrls, normalized]);
-    }
+    const updatedList = [...blockedUrls, normalized];
+    setBlockedUrls(updatedList);
 
     if (session?.user) {
-      setBlockedUrls([...blockedUrls, normalized]);
       await addWebsiteToBlockedList(normalized);
-      toast.success("Website blocked ✅");
-      setInputUrl("");
-      setShowSuggestions(false);
-      setError(null);
     } else {
-      localStorage.setItem(
-        "blocked-website",
-        JSON.stringify([...blockedUrls, normalized]),
-      );
-
-      setInputUrl("");
-      setShowSuggestions(false);
-      inputRef.current?.focus();
+      localStorage.setItem("blocked-website", JSON.stringify(updatedList));
     }
+
+    toast.success("Website blocked ✅");
+    setInputUrl("");
+    setShowSuggestions(false);
+
+    // 🔄 Sync to extension
+    await sendBlockedSitesToExtension(updatedList);
   };
 
   const handleInputFocus = () => {
@@ -251,8 +221,6 @@ export default function Blocker() {
               onFocus={handleInputFocus}
               className="bg-white/70"
               disabled={isLoading}
-              aria-label="Website URL to block"
-              aria-describedby={error ? "url-error" : undefined}
             />
             {error && (
               <p id="url-error" className="mt-1 text-xs text-red-500">
@@ -267,7 +235,6 @@ export default function Blocker() {
                 size="sm"
                 className="px-3"
                 disabled={isLoading || !inputUrl.trim()}
-                aria-label="Block website"
               >
                 {isLoading ? (
                   <Loader2 size={28} className="animate-spin" />
@@ -289,7 +256,6 @@ export default function Blocker() {
               ref={suggestionsRef}
               className="absolute top-full right-12 left-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
               role="listbox"
-              aria-label="Common websites to block"
             >
               <div className="p-2">
                 <p className="mb-2 px-2 text-xs text-gray-500">
@@ -297,7 +263,7 @@ export default function Blocker() {
                 </p>
                 <div className="space-y-1">
                   {frequentlyBlockedWebsite.map((website) => {
-                    const { normalized } = validateAndNormalizeUrl(website.url);
+                    const { normalized } = grabDomainUrl(website.url);
                     const isAlreadyBlocked = blockedUrls.includes(normalized);
 
                     return (
@@ -311,7 +277,6 @@ export default function Blocker() {
                             : "hover:bg-gray-50"
                         }`}
                         role="option"
-                        aria-selected={isAlreadyBlocked}
                       >
                         <span className="font-medium">{website.name}</span>
                         <span className="text-xs text-gray-400">
@@ -326,7 +291,7 @@ export default function Blocker() {
           )}
       </div>
 
-      {/* Container for blocked URLs */}
+      {/* Blocked URLs container */}
       {blockedUrls.length > 0 && showBlockedContainer && (
         <motion.div
           initial={{ opacity: 0, filter: `blur(10px)` }}

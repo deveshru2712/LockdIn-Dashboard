@@ -1,0 +1,26 @@
+export default async function sendBlockedSitesToExtension(
+  blockedSites: string[],
+) {
+  try {
+    if (!Array.isArray(blockedSites)) {
+      throw new Error("Invalid blockedSites array");
+    }
+
+    const response = await chrome.runtime.sendMessage(
+      process.env.EXTENSION_ID,
+      {
+        type: "UPDATE_BLOCKED_SITES",
+        blockedSites,
+      },
+    );
+
+    console.log("🔁 Extension response:", response);
+    return response;
+  } catch (error) {
+    console.error("❌ Failed to send blocked sites to extension:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}

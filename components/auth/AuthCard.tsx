@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import EmailForm from "./form";
 import { signIn } from "@/lib/auth/auth-client";
 
 export default function AuthCard({

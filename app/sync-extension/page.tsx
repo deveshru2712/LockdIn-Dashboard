@@ -8,16 +8,17 @@ import {
 } from "@/components/ui/card";
 import generateToken from "@/utils/generateToken";
 import sendTokenToExtension from "@/utils/sendTokenToExtension";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Page() {
+  const router = useRouter();
   const [status, setStatus] = useState("Syncing with Chrome extension...");
 
   useEffect(() => {
     const syncToken = async () => {
       try {
         const token = await generateToken();
-        console.log("✅ Generated token:", token);
 
         if (!token) {
           setStatus("❌ Failed to generate token (not logged in?)");
@@ -29,7 +30,9 @@ export default function Page() {
 
         if (response?.ok) {
           setStatus("✅ Synced successfully with Chrome extension!");
+          router.push("/");
         } else {
+          // toast about moving forward locally
           setStatus("❌ Failed to sync with extension");
         }
       } catch (err) {

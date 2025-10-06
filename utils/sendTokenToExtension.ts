@@ -1,14 +1,14 @@
 export default async function sendTokenToExtension(token: string) {
   if (!token) return null;
 
-  // Your actual Chrome extension ID
-  const EXTENSION_ID = "jplmpjbfgdnhoceoeelbfhjhaedieghh";
-
   try {
-    const response = await chrome.runtime.sendMessage(EXTENSION_ID, {
-      type: "SAVE_TOKEN",
-      token,
-    });
+    const response = await chrome.runtime.sendMessage(
+      process.env.EXTENSION_ID,
+      {
+        type: "SAVE_TOKEN",
+        token,
+      },
+    );
 
     if (response?.success) {
       console.log("✅ Token saved successfully in extension storage");
