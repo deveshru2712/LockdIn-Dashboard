@@ -11,6 +11,7 @@ import generateToken from "@/utils/generateToken";
 import sendTokenToExtension from "@/utils/sendTokenToExtension";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
   const router = useRouter();
@@ -32,6 +33,8 @@ export default function Page() {
 
         if (!response?.ok) {
           setStatus("Failed to sync with Chrome extension");
+          toast.error("Your data will be saved locally instead");
+          setTimeout(() => router.push("/"), 2000);
           return;
         }
 
