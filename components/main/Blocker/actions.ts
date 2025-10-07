@@ -135,7 +135,7 @@ export async function syncLocalWithDb(blockedWebsites: string[]): Promise<{
       where: { userId: session.user.id },
       select: { url: true },
     });
-    const dbUrls = dbSites.map((s) => s.url);
+    const dbUrls = dbSites.map((site) => site.url);
 
     const toAdd = blockedWebsites.filter((url) => !dbUrls.includes(url));
     const toRemove = dbUrls.filter((url) => !blockedWebsites.includes(url));
@@ -154,6 +154,8 @@ export async function syncLocalWithDb(blockedWebsites: string[]): Promise<{
         where: { userId: session.user.id, url: { in: toRemove } },
       });
     }
+
+    revalidateTag("user-blocked-website");
 
     return { success: true, added: toAdd, removed: toRemove };
   } catch (error) {
