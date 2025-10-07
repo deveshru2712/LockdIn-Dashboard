@@ -3,7 +3,7 @@ export default async function sendTokenToExtension(token: string) {
 
   try {
     const response = await chrome.runtime.sendMessage(
-      process.env.EXTENSION_ID,
+      process.env.NEXT_PUBLIC_EXTENSION_ID,
       {
         type: "SAVE_TOKEN",
         token,
