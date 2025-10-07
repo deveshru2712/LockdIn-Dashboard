@@ -115,3 +115,49 @@ export const getCachedUserBlockedUrl = unstable_cache(
     tags: [`user-blocked-website`],
   },
 );
+
+// runs after the user logged in to sync with local db
+export async function syncLocalWithDb(blockedWebsites: string[]): Promise<{
+  success: boolean;
+  added?: string[];
+  removed?: string[];
+  error?: any;
+}> {
+  try {
+    if (blockedWebsites.length === 0)
+      return { success: true, added: [], removed: [] };
+
+    const session = await getSession();
+    if (!session?.user?.id)
+      return { success: false, error: "No active session or user" };
+
+    const dbSites = await prisma.blockedWebsite.findMany({
+      where: { userId: session.user.id },
+      select: { url: true },
+    });
+    const dbUrls = dbSites.map((s) => s.url);
+
+    const toAdd = blockedWebsites.filter((url) => !dbUrls.includes(url));
+    const toRemove = dbUrls.filter((url) => !blockedWebsites.includes(url));
+
+    // adding new website
+    if (toAdd.length > 0) {
+      await prisma.blockedWebsite.createMany({
+        data: toAdd.map((url) => ({ url, userId: session.user.id })),
+        skipDuplicates: true,
+      });
+    }
+
+    //removing
+    if (toRemove.length > 0) {
+      await prisma.blockedWebsite.deleteMany({
+        where: { userId: session.user.id, url: { in: toRemove } },
+      });
+    }
+
+    return { success: true, added: toAdd, removed: toRemove };
+  } catch (error) {
+    console.error("Sync failed:", error);
+    return { success: false, error };
+  }
+}

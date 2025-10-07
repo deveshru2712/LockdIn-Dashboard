@@ -1,4 +1,5 @@
 "use client";
+import { syncLocalWithDb } from "@/components/main/Blocker/actions";
 import {
   Card,
   CardContent,
@@ -13,36 +14,58 @@ import { useEffect, useState } from "react";
 
 export default function Page() {
   const router = useRouter();
-  const [status, setStatus] = useState("Syncing with Chrome extension...");
+  const [status, setStatus] = useState("🔄 Starting sync process...");
 
   useEffect(() => {
-    const syncToken = async () => {
+    const syncProcess = async () => {
       try {
+        setStatus("Generating secure token...");
         const token = await generateToken();
 
         if (!token) {
-          setStatus("❌ Failed to generate token (not logged in?)");
+          setStatus("Failed to generate token (not logged in?)");
           return;
         }
 
+        setStatus("Syncing with Chrome extension...");
         const response = await sendTokenToExtension(token);
-        console.log("Extension response:", response);
 
-        if (response?.ok) {
-          setStatus("✅ Synced successfully with Chrome extension!");
-          router.push("/");
-        } else {
-          // toast about moving forward locally
-          setStatus("❌ Failed to sync with extension");
+        if (!response?.ok) {
+          setStatus("Failed to sync with Chrome extension");
+          return;
         }
+
+        setStatus("✅ Extension connected successfully!");
+
+        setStatus(" Reading local blocked websites...");
+        const localBlockedWebsite = localStorage.getItem("blocked-website");
+        const localBlockedWebsiteArr = localBlockedWebsite
+          ? JSON.parse(localBlockedWebsite)
+          : [];
+
+        if (localBlockedWebsiteArr.length > 0) {
+          setStatus("Syncing blocked websites with database...");
+          const result = await syncLocalWithDb(localBlockedWebsiteArr);
+
+          if (result?.success) {
+            setStatus(`✅ Synced `);
+          } else {
+            setStatus("Partial sync completed or error occurred.");
+          }
+        } else {
+          setStatus("No local blocked websites to sync.");
+        }
+
+        setStatus("Redirecting to dashboard...");
+        setTimeout(() => router.push("/"), 1500);
       } catch (err) {
         console.error("Sync failed:", err);
-        setStatus("❌ Unexpected error syncing with extension");
+        setStatus("Unexpected error during sync.");
       }
     };
 
-    syncToken();
-  }, []);
+    syncProcess();
+  }, [router]);
 
   return (
     <main className="flex h-dvh w-full items-center justify-center p-4">
@@ -62,7 +85,9 @@ export default function Page() {
                 This usually takes just a moment. You can keep this tab open.
               </p>
             </div>
-            <span>{status}</span>
+            <span className="text-sm font-medium whitespace-pre-line">
+              {status}
+            </span>
           </div>
         </CardContent>
       </Card>
