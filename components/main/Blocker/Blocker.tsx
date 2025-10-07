@@ -263,13 +263,13 @@ export default function Blocker() {
                 </p>
                 <div className="space-y-1">
                   {frequentlyBlockedWebsite.map((website) => {
-                    const { normalized } = grabDomainUrl(website.url);
+                    const { normalized } = grabDomainUrl(website.domain);
                     const isAlreadyBlocked = blockedUrls.includes(normalized);
 
                     return (
                       <button
-                        key={website.url}
-                        onClick={() => handleSuggestionClick(website.url)}
+                        key={website.domain}
+                        onClick={() => handleSuggestionClick(website.domain)}
                         disabled={isAlreadyBlocked}
                         className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm transition-colors duration-150 ${
                           isAlreadyBlocked
@@ -280,7 +280,9 @@ export default function Blocker() {
                       >
                         <span className="font-medium">{website.name}</span>
                         <span className="text-xs text-gray-400">
-                          {isAlreadyBlocked ? "Already blocked" : website.url}
+                          {isAlreadyBlocked
+                            ? "Already blocked"
+                            : website.domain}
                         </span>
                       </button>
                     );

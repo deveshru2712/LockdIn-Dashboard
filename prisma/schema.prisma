@@ -91,10 +91,9 @@ model BlockedWebsite {
 model PredefinedWebsite {
   id        String   @id @default(cuid())
   name      String   
-  url       String   
   domain    String   
   createdAt DateTime @default(now())
   
-  @@unique([url])
+  @@unique([domain])
   @@map("predefined_websites")
 }

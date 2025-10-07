@@ -5,7 +5,7 @@ import { revalidateTag, unstable_cache } from "next/cache";
 
 export interface FrequentlyBlockedWebsite {
   name: string;
-  url: string;
+  domain: string;
 }
 
 // get the most frequent blocked website
@@ -14,7 +14,7 @@ const getMostFrequentlyBlockedSitesInternal = async (): Promise<
 > => {
   try {
     const frequentlyBlockedWebsite = await prisma.predefinedWebsite.findMany({
-      select: { name: true, url: true },
+      select: { name: true, domain: true },
     });
 
     return frequentlyBlockedWebsite;
@@ -31,7 +31,7 @@ export const getCachedMostFrequentlyBlockedSites = unstable_cache(
   getMostFrequentlyBlockedSitesInternal,
   ["most-frequently-blocked-sites"],
   {
-    revalidate: 36000, // 10 hour
+    revalidate: 1, // 10 hour
     tags: ["frequently-blocked-websites"],
   },
 );
