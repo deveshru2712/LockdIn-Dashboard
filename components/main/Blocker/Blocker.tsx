@@ -79,7 +79,7 @@ export default function Blocker() {
         setBlockedUrls(localList);
       }
 
-      setTimeout(() => setShowBlockedContainer(true), 1000);
+      setTimeout(() => setShowBlockedContainer(true), 2000);
     };
     loadBlockedSites();
   }, [session?.user]);

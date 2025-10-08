@@ -4,7 +4,6 @@ import { ReactLenis } from "@/utils/lenis";
 import "./globals.css";
 import Overlay from "@/components/Overlay";
 import { Toaster } from "sonner";
-import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +37,6 @@ export default function RootLayout({
           className={`${geistSans.variable} ${inter.className} ${jakarta.variable} overflow-hidden antialiased`}
         >
           <Overlay />
-          <Navbar />
           <div className="relative z-10">{children}</div>
           <Toaster />
         </body>

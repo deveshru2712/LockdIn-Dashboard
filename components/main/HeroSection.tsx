@@ -3,15 +3,16 @@ import { motion } from "motion/react";
 import Blocker from "./Blocker/Blocker";
 import Footer from "./Footer";
 import Header from "./Header";
-import FloatingMenu from "../FloatingMenu";
 import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
 import { Button } from "../ui/button";
+import Navbar from "../Navbar";
 
 export default function HeroSection() {
   const installed = useExtensionInstalled();
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
+      <Navbar />
       <motion.div
         initial={{ filter: `blur(20px)`, opacity: 0, y: 20 }}
         animate={{ filter: `blur(0px)`, opacity: 1, y: 0 }}
@@ -58,16 +59,6 @@ export default function HeroSection() {
         >
           <Footer />
         </motion.div>
-      </motion.div>
-
-      {/* floating menu */}
-      <motion.div
-        className="fixed right-10 bottom-25"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 1, ease: "easeOut" }}
-      >
-        <FloatingMenu />
       </motion.div>
     </div>
   );
