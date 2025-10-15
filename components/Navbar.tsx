@@ -35,7 +35,7 @@ export default function Navbar() {
       transition={{ duration: 0.9, ease: "easeOut" }}
       className="fixed top-4 left-1/2 z-50 w-full -translate-x-1/2 px-4 md:px-6 lg:px-8"
     >
-      <nav className="bg-foreground text-background border-border mx-auto flex max-w-3xl items-center justify-between rounded-3xl border px-4 py-2 shadow-sm backdrop-blur supports-[backdrop-filter]:backdrop-blur">
+      <nav className="bg-foreground text-background mx-auto flex max-w-3xl items-center justify-between rounded-3xl px-4 py-2 shadow-sm">
         {/* Logo */}
         <Link
           href="/"

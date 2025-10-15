@@ -3,7 +3,7 @@ import React from "react";
 const Overlay = () => {
   return (
     <div
-      className="absolute inset-0 z-0"
+      className="fixed inset-0 z-0"
       style={{
         backgroundImage: `
         linear-gradient(to right, #e7e5e4 1px, transparent 1px),

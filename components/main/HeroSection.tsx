@@ -5,14 +5,14 @@ import Footer from "./Footer";
 import Header from "./Header";
 import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
 import { Button } from "../ui/button";
-import Navbar from "../Navbar";
+// import Navbar from "../Navbar";
 
 export default function HeroSection() {
   const installed = useExtensionInstalled();
 
   return (
-    <div className="flex h-screen w-full items-center justify-center">
-      <Navbar />
+    <div className="flex min-h-screen w-full items-center justify-center">
+      {/* <Navbar /> */}
       <motion.div
         initial={{ filter: `blur(20px)`, opacity: 0, y: 20 }}
         animate={{ filter: `blur(0px)`, opacity: 1, y: 0 }}

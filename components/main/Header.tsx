@@ -7,7 +7,7 @@ const Header = () => {
     <div className="flex flex-col items-center justify-center gap-6">
       <Badge
         variant={"default"}
-        className="border-slate-200 px-2 py-1.5 shadow backdrop-blur-sm"
+        className="border-2 border-slate-200 px-2 py-1.5 shadow backdrop-blur-sm transition-all duration-300 hover:border-slate-400"
       >
         <Zap color="lightblue" />
         <span className="ml-1 text-base font-medium text-shadow-2xs">
