@@ -5,14 +5,13 @@ import Footer from "./Footer";
 import Header from "./Header";
 import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
 import { Button } from "../ui/button";
-// import Navbar from "../Navbar";
+import Quote from "../Quote";
 
 export default function HeroSection() {
   const installed = useExtensionInstalled();
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center">
-      {/* <Navbar /> */}
+    <div className="flex h-screen w-full items-center justify-center">
       <motion.div
         initial={{ filter: `blur(20px)`, opacity: 0, y: 20 }}
         animate={{ filter: `blur(0px)`, opacity: 1, y: 0 }}
@@ -22,7 +21,7 @@ export default function HeroSection() {
           opacity: { duration: 0.6 },
           filter: { duration: 0.7 },
         }}
-        className="mx-auto flex max-w-2xl flex-col gap-12"
+        className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-12"
       >
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -36,6 +35,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex w-full items-center justify-center"
         >
           {installed ? (
             <Blocker />
@@ -59,6 +59,7 @@ export default function HeroSection() {
         >
           <Footer />
         </motion.div>
+        <Quote />
       </motion.div>
     </div>
   );
