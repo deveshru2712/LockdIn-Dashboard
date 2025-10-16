@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { ShieldBan, X, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { authClient } from "@/lib/auth/auth-client";
 import {
   FrequentlyBlockedWebsite,
   getCachedMostFrequentlyBlockedSites,

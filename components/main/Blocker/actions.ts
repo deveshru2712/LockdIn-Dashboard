@@ -1,5 +1,5 @@
 "use server";
-import { prisma } from "@/lib/db/prisma";
+import prisma from "@/lib/db/prisma";
 import { unstable_cache } from "next/cache";
 
 export interface FrequentlyBlockedWebsite {
