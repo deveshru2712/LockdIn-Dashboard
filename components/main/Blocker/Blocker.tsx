@@ -118,6 +118,7 @@ export default function Blocker() {
 
     const updatedList = [...blockedUrls, normalized];
     setBlockedUrls(updatedList);
+    toast.success("website successfully blocked.");
 
     if (typeof window !== "undefined") {
       localStorage.setItem("blocked-website", JSON.stringify(updatedList));
@@ -148,6 +149,7 @@ export default function Blocker() {
 
     const updatedList = [...blockedUrls, normalized];
     setBlockedUrls(updatedList);
+    toast.success("website successfully blocked.");
 
     if (typeof window !== "undefined") {
       localStorage.setItem("blocked-website", JSON.stringify(updatedList));
