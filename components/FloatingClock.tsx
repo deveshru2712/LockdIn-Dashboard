@@ -1,7 +1,8 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { AlarmClock, Play, TimerReset, X } from "lucide-react";
+import { AlarmClock, Play, X } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -11,6 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import Blocker from "./main/Blocker/Blocker";
+import { Separator } from "./ui/separator";
+import { Badge } from "./ui/badge";
 
 interface Preset {
   label: string;
@@ -29,7 +33,7 @@ const PRESETS: Preset[] = [
 const LS_END_KEY = "lockdin_session_end";
 const LS_TOTAL_KEY = "lockdin_session_total";
 
-function formatMs(ms: number) {
+function FormatTime(ms: number) {
   if (ms <= 0) return "00:00";
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -44,7 +48,7 @@ function formatMs(ms: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function safeGetNumber(key: string): number | null {
+function GetTimeFromLocalStorage(key: string): number | null {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
@@ -56,14 +60,32 @@ function safeGetNumber(key: string): number | null {
 }
 
 export default function FloatingClock() {
+  const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
+  const [showBlockedContainer, setShowBlockedContainer] = useState(false);
+
   const [open, setOpen] = useState(false);
   const [sessionEnd, setSessionEnd] = useState<number | null>(null);
   const [sessionTotalMs, setSessionTotalMs] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
 
+  // Load blocked sites (merge local + server)
   useEffect(() => {
-    const end = safeGetNumber(LS_END_KEY);
-    const total = safeGetNumber(LS_TOTAL_KEY);
+    const loadBlockedSites = async () => {
+      if (typeof window === "undefined") return;
+
+      const local = localStorage.getItem("blocked-website");
+      const localList = local ? JSON.parse(local) : [];
+
+      setBlockedUrls(localList);
+
+      setTimeout(() => setShowBlockedContainer(true), 2000);
+    };
+    loadBlockedSites();
+  }, []);
+
+  useEffect(() => {
+    const end = GetTimeFromLocalStorage(LS_END_KEY);
+    const total = GetTimeFromLocalStorage(LS_TOTAL_KEY);
     if (end && end > Date.now()) {
       setSessionEnd(end);
       if (total && total > 0) setSessionTotalMs(total);
@@ -112,7 +134,6 @@ export default function FloatingClock() {
     setSessionEnd(end);
     setSessionTotalMs(ms);
     persist(end, ms);
-    // Removed setOpen(false) to keep dialog open
   }
 
   function endSession() {
@@ -141,11 +162,11 @@ export default function FloatingClock() {
         <Button
           aria-label={
             active
-              ? `Session active, ${formatMs(remainingMs)} remaining`
+              ? `Session active, ${FormatTime(remainingMs)} remaining`
               : "Start a focus session"
           }
           size="icon"
-          className={`fixed right-8 bottom-8 h-12 w-12 rounded-full shadow-lg transition-transform hover:scale-105 ${
+          className={`fixed right-8 bottom-8 h-12 w-12 cursor-pointer rounded-full shadow-lg transition-transform hover:scale-105 ${
             active
               ? "bg-primary text-primary-foreground ring-primary/40 animate-pulse ring-2"
               : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -153,7 +174,7 @@ export default function FloatingClock() {
         >
           {active ? (
             <span className="text-xs font-medium" aria-hidden>
-              {formatMs(remainingMs)}
+              {FormatTime(remainingMs)}
             </span>
           ) : (
             <AlarmClock className="h-5 w-5" aria-hidden />
@@ -184,7 +205,7 @@ export default function FloatingClock() {
                   Time remaining
                 </span>
                 <span className="text-2xl font-semibold tabular-nums">
-                  {formatMs(remainingMs)}
+                  {FormatTime(remainingMs)}
                 </span>
               </div>
               <div className="text-right">
@@ -192,7 +213,6 @@ export default function FloatingClock() {
                 <div className="font-medium">{endTimeDisplay}</div>
               </div>
             </div>
-
             {sessionTotalMs ? (
               <div className="grid gap-2">
                 <div
@@ -217,6 +237,32 @@ export default function FloatingClock() {
                 </div>
               </div>
             ) : null}
+            {/* we can show the block website list */}
+
+            {blockedUrls.length > 0 && showBlockedContainer && (
+              <motion.div
+                initial={{ opacity: 0, filter: `blur(10px)` }}
+                animate={{ opacity: 1, filter: `blur(0px)` }}
+                transition={{ duration: 0.3 }}
+                className="space-y-3"
+              >
+                <Separator />
+                <h3 className="text-sm font-medium text-gray-600">
+                  Blocked Websites ({blockedUrls.length})
+                </h3>
+                <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
+                  {blockedUrls.map((url) => (
+                    <Badge
+                      key={url}
+                      variant="secondary"
+                      className="flex items-center gap-1 px-2 py-1 transition-all duration-300 hover:bg-slate-50"
+                    >
+                      <span className="text-xs">{url}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             <Button
               onClick={endSession}
@@ -241,6 +287,7 @@ export default function FloatingClock() {
                   </Button>
                 ))}
               </div>
+              <Blocker />
             </div>
           </div>
         )}

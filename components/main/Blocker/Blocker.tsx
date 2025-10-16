@@ -224,7 +224,7 @@ export default function Blocker() {
   };
 
   return (
-    <div className="font-jakarta w-full max-w-lg space-y-6">
+    <div className="font-jakarta w-full max-w-lg space-y-6" data-lenis-prevent>
       <div className="relative">
         <div className="flex gap-2">
           <div className="flex-1">
