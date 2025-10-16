@@ -12,9 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import Blocker from "./main/Blocker/Blocker";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
+import SessionBlocker from "./SessionBlocker";
 
 interface Preset {
   label: string;
@@ -73,7 +73,7 @@ export default function FloatingClock() {
     const loadBlockedSites = async () => {
       if (typeof window === "undefined") return;
 
-      const local = localStorage.getItem("blocked-website");
+      const local = localStorage.getItem("session-blocked-website");
       const localList = local ? JSON.parse(local) : [];
 
       setBlockedUrls(localList);
@@ -287,7 +287,7 @@ export default function FloatingClock() {
                   </Button>
                 ))}
               </div>
-              <Blocker />
+              <SessionBlocker />
             </div>
           </div>
         )}
