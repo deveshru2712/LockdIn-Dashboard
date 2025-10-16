@@ -15,14 +15,10 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { authClient } from "@/lib/auth/auth-client";
 import {
-  addWebsiteToBlockedList,
   FrequentlyBlockedWebsite,
   getCachedMostFrequentlyBlockedSites,
-  getCachedUserBlockedUrl,
-  removeWebsiteFromBlockedList,
 } from "./actions";
 import { toast } from "sonner";
-import sendBlockedSitesToExtension from "@/utils/sendBlockedSitesToExtension";
 
 export default function Blocker() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
@@ -37,7 +33,6 @@ export default function Blocker() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const { data: session } = authClient.useSession();
 
   // Fetch frequently blocked sites
   useEffect(() => {
@@ -56,7 +51,7 @@ export default function Blocker() {
     fetchFrequentlyBlockedWebsite();
   }, []);
 
-  // Load blocked sites (merge local + server)
+  // get blocked site
   useEffect(() => {
     const loadBlockedSites = async () => {
       if (typeof window === "undefined") return;
@@ -64,25 +59,12 @@ export default function Blocker() {
       const local = localStorage.getItem("blocked-website");
       const localList = local ? JSON.parse(local) : [];
 
-      if (session?.user) {
-        try {
-          const result = await getCachedUserBlockedUrl(session.user.id);
-          const merged = Array.from(new Set([...(result || []), ...localList]));
-          setBlockedUrls(merged);
-          localStorage.setItem("blocked-website", JSON.stringify(merged));
-          await sendBlockedSitesToExtension(merged);
-        } catch (err) {
-          console.error("Failed to fetch user blocked sites:", err);
-          setBlockedUrls(localList);
-        }
-      } else {
-        setBlockedUrls(localList);
-      }
+      setBlockedUrls(localList);
 
       setTimeout(() => setShowBlockedContainer(true), 2000);
     };
     loadBlockedSites();
-  }, [session?.user]);
+  }, []);
 
   // Suggestion dropdown close on outside click
   useEffect(() => {
@@ -141,21 +123,6 @@ export default function Blocker() {
     if (typeof window !== "undefined") {
       localStorage.setItem("blocked-website", JSON.stringify(updatedList));
     }
-
-    try {
-      if (session?.user) {
-        await addWebsiteToBlockedList(normalized);
-      }
-
-      toast.success("Website blocked ✅");
-      setInputUrl("");
-      setShowSuggestions(false);
-      setError(null);
-
-      await sendBlockedSitesToExtension(updatedList);
-    } catch (err) {
-      console.error("Failed to add site:", err);
-    }
   };
 
   const removeUrl = async (urlToRemove: string) => {
@@ -164,17 +131,6 @@ export default function Blocker() {
 
     if (typeof window !== "undefined") {
       localStorage.setItem("blocked-website", JSON.stringify(updatedList));
-    }
-
-    try {
-      if (session?.user) {
-        await removeWebsiteFromBlockedList(urlToRemove);
-      }
-
-      toast.success("Website unblocked ✅");
-      await sendBlockedSitesToExtension(updatedList);
-    } catch (err) {
-      console.error("Failed to remove site:", err);
     }
   };
 
@@ -196,19 +152,6 @@ export default function Blocker() {
 
     if (typeof window !== "undefined") {
       localStorage.setItem("blocked-website", JSON.stringify(updatedList));
-    }
-
-    try {
-      if (session?.user) {
-        await addWebsiteToBlockedList(normalized);
-      }
-
-      toast.success("Website blocked ✅");
-      setInputUrl("");
-      setShowSuggestions(false);
-      await sendBlockedSitesToExtension(updatedList);
-    } catch (err) {
-      console.error("Failed to add site from suggestion:", err);
     }
   };
 
