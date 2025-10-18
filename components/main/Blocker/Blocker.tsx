@@ -18,6 +18,7 @@ import {
   getCachedMostFrequentlyBlockedSites,
 } from "./actions";
 import { toast } from "sonner";
+import sendBlockedSitesToExtension from "@/utils/sendBlockedListToExtension";
 
 export default function Blocker() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
@@ -120,24 +121,25 @@ export default function Blocker() {
     setBlockedUrls(updatedList);
     toast.success("website successfully blocked.");
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem("blocked-website", JSON.stringify(updatedList));
-    }
+    // setting it locally
+    localStorage.setItem("blocked-website", JSON.stringify(updatedList));
+    // sending it to the extension
+    sendBlockedSitesToExtension(updatedList);
   };
 
   const removeUrl = async (urlToRemove: string) => {
     const updatedList = blockedUrls.filter((url) => url !== urlToRemove);
     setBlockedUrls(updatedList);
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem("blocked-website", JSON.stringify(updatedList));
-    }
+    localStorage.setItem("blocked-website", JSON.stringify(updatedList));
+    sendBlockedSitesToExtension(updatedList);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
       addUrl();
+      setInputUrl("");
     } else if (e.key === "Escape") {
       setShowSuggestions(false);
     }
@@ -151,9 +153,8 @@ export default function Blocker() {
     setBlockedUrls(updatedList);
     toast.success("website successfully blocked.");
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem("blocked-website", JSON.stringify(updatedList));
-    }
+    localStorage.setItem("blocked-website", JSON.stringify(updatedList));
+    sendBlockedSitesToExtension(updatedList);
   };
 
   const handleInputFocus = () => {

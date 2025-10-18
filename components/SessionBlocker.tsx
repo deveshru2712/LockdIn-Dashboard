@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import { Input } from "@/components/ui/input";
@@ -19,8 +18,15 @@ import {
 } from "@/components/main/Blocker/actions";
 import { toast } from "sonner";
 
-export default function SessionBlocker() {
-  const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
+interface SessionBlockerProps {
+  sessionBlockedUrls: string[];
+  setSessionBlockedUrls: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+export default function SessionBlocker({
+  sessionBlockedUrls,
+  setSessionBlockedUrls,
+}: SessionBlockerProps) {
   const [frequentlyBlockedWebsite, setFrequentlyBlockedWebsite] = useState<
     FrequentlyBlockedWebsite[] | null
   >(null);
@@ -28,7 +34,7 @@ export default function SessionBlocker() {
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showBlockedContainer, setShowBlockedContainer] = useState(false);
+  const [showBlockedContainer, setShowBlockedContainer] = useState(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -48,21 +54,6 @@ export default function SessionBlocker() {
       }
     };
     fetchFrequentlyBlockedWebsite();
-  }, []);
-
-  // get blocked site
-  useEffect(() => {
-    const loadBlockedSites = async () => {
-      if (typeof window === "undefined") return;
-
-      const local = localStorage.getItem("session-session-blocked-website");
-      const localList = local ? JSON.parse(local) : [];
-
-      setBlockedUrls(localList);
-
-      setTimeout(() => setShowBlockedContainer(true), 2000);
-    };
-    loadBlockedSites();
   }, []);
 
   // Suggestion dropdown close on outside click
@@ -111,33 +102,21 @@ export default function SessionBlocker() {
       return;
     }
 
-    if (blockedUrls.includes(normalized)) {
+    if (sessionBlockedUrls.includes(normalized)) {
       setError("This website is already blocked");
       return;
     }
 
-    const updatedList = [...blockedUrls, normalized];
-    setBlockedUrls(updatedList);
-    toast.success("website successfully blocked.");
+    const updatedList = [...sessionBlockedUrls, normalized];
+    setSessionBlockedUrls(updatedList);
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "session-session-blocked-website",
-        JSON.stringify(updatedList),
-      );
-    }
+    setInputUrl("");
+    setError(null);
   };
 
   const removeUrl = async (urlToRemove: string) => {
-    const updatedList = blockedUrls.filter((url) => url !== urlToRemove);
-    setBlockedUrls(updatedList);
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "session-blocked-website",
-        JSON.stringify(updatedList),
-      );
-    }
+    const updatedList = sessionBlockedUrls.filter((url) => url !== urlToRemove);
+    setSessionBlockedUrls(updatedList);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -151,18 +130,10 @@ export default function SessionBlocker() {
 
   const handleSuggestionClick = async (url: string) => {
     const { normalized } = grabDomainUrl(url);
-    if (blockedUrls.includes(normalized)) return;
+    if (sessionBlockedUrls.includes(normalized)) return;
 
-    const updatedList = [...blockedUrls, normalized];
-    setBlockedUrls(updatedList);
-    toast.success("website successfully blocked.");
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "session-blocked-website",
-        JSON.stringify(updatedList),
-      );
-    }
+    const updatedList = [...sessionBlockedUrls, normalized];
+    setSessionBlockedUrls(updatedList);
   };
 
   const handleInputFocus = () => {
@@ -234,7 +205,8 @@ export default function SessionBlocker() {
                 <div className="space-y-1">
                   {frequentlyBlockedWebsite.map((website) => {
                     const { normalized } = grabDomainUrl(website.domain);
-                    const isAlreadyBlocked = blockedUrls.includes(normalized);
+                    const isAlreadyBlocked =
+                      sessionBlockedUrls.includes(normalized);
 
                     return (
                       <button
@@ -263,19 +235,19 @@ export default function SessionBlocker() {
           )}
       </div>
 
-      {blockedUrls.length > 0 && showBlockedContainer && (
+      {sessionBlockedUrls.length > 0 && showBlockedContainer && (
         <motion.div
-          initial={{ opacity: 0, filter: `blur(10px)` }}
-          animate={{ opacity: 1, filter: `blur(0px)` }}
+          initial={{ opacity: 0, filter: "blur(10px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
           transition={{ duration: 0.3 }}
           className="space-y-3"
         >
           <Separator />
           <h3 className="text-sm font-medium text-gray-600">
-            Blocked Websites ({blockedUrls.length})
+            Blocked Websites ({sessionBlockedUrls.length})
           </h3>
           <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
-            {blockedUrls.map((url) => (
+            {sessionBlockedUrls.map((url) => (
               <Badge
                 key={url}
                 variant="secondary"
@@ -293,7 +265,7 @@ export default function SessionBlocker() {
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Unblock</p>
+                    <p>Remove</p>
                   </TooltipContent>
                 </Tooltip>
               </Badge>

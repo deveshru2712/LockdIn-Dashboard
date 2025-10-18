@@ -30,6 +30,8 @@ const PRESETS: Preset[] = [
   { label: "24h", ms: 24 * 60 * 60 * 1000 },
 ];
 
+type PresetMs = (typeof PRESETS)[number]["ms"];
+
 const LS_END_KEY = "lockdin_session_end";
 const LS_TOTAL_KEY = "lockdin_session_total";
 
@@ -60,7 +62,8 @@ function GetTimeFromLocalStorage(key: string): number | null {
 }
 
 export default function FloatingClock() {
-  const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
+  const [sessionBlockedUrls, setSessionBlockedUrls] = useState<string[]>([]);
+  const [sessionMs, setSessionMs] = useState<PresetMs>(PRESETS[0].ms);
   const [showBlockedContainer, setShowBlockedContainer] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -68,7 +71,7 @@ export default function FloatingClock() {
   const [sessionTotalMs, setSessionTotalMs] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
 
-  // Load blocked sites (merge local + server)
+  // load session blocked website
   useEffect(() => {
     const loadBlockedSites = async () => {
       if (typeof window === "undefined") return;
@@ -76,7 +79,8 @@ export default function FloatingClock() {
       const local = localStorage.getItem("session-blocked-website");
       const localList = local ? JSON.parse(local) : [];
 
-      setBlockedUrls(localList);
+      console.log("here is the list of session blocked website", localList);
+      setSessionBlockedUrls(localList);
 
       setTimeout(() => setShowBlockedContainer(true), 2000);
     };
@@ -130,10 +134,17 @@ export default function FloatingClock() {
   }
 
   function startWithDuration(ms: number) {
+    if (setSessionBlockedUrls.length == 0) return;
     const end = Date.now() + ms;
     setSessionEnd(end);
     setSessionTotalMs(ms);
     persist(end, ms);
+
+    // saving at the end
+    localStorage.setItem(
+      "session-blocked-website",
+      JSON.stringify(sessionBlockedUrls),
+    );
   }
 
   function endSession() {
@@ -237,9 +248,8 @@ export default function FloatingClock() {
                 </div>
               </div>
             ) : null}
-            {/* we can show the block website list */}
 
-            {blockedUrls.length > 0 && showBlockedContainer && (
+            {sessionBlockedUrls.length > 0 && showBlockedContainer && (
               <motion.div
                 initial={{ opacity: 0, filter: `blur(10px)` }}
                 animate={{ opacity: 1, filter: `blur(0px)` }}
@@ -248,10 +258,10 @@ export default function FloatingClock() {
               >
                 <Separator />
                 <h3 className="text-sm font-medium text-gray-600">
-                  Blocked Websites ({blockedUrls.length})
+                  Blocked Websites ({sessionBlockedUrls.length})
                 </h3>
                 <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
-                  {blockedUrls.map((url) => (
+                  {sessionBlockedUrls.map((url) => (
                     <Badge
                       key={url}
                       variant="secondary"
@@ -274,21 +284,30 @@ export default function FloatingClock() {
           </div>
         ) : (
           <div className="grid gap-4">
-            <div className="grid gap-2">
-              <div className="grid grid-cols-3 gap-2">
-                {PRESETS.map((p) => (
-                  <Button
-                    key={p.label}
-                    variant="secondary"
-                    onClick={() => startWithDuration(p.ms)}
-                  >
-                    <Play className="mr-2 h-4 w-4" />
-                    {p.label}
-                  </Button>
-                ))}
-              </div>
-              <SessionBlocker />
+            <SessionBlocker
+              sessionBlockedUrls={sessionBlockedUrls}
+              setSessionBlockedUrls={setSessionBlockedUrls}
+            />
+            <div className="grid grid-cols-3 gap-2">
+              {PRESETS.map((p) => (
+                <Button
+                  key={p.label}
+                  variant="secondary"
+                  className={`${sessionMs == p.ms ? "border border-red-400" : ""} hover:border hover:border-red-300`}
+                  onClick={() => setSessionMs(p.ms)}
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  {p.label}
+                </Button>
+              ))}
             </div>
+            <Button
+              disabled={sessionBlockedUrls.length == 0}
+              onClick={() => startWithDuration(sessionMs)}
+              className="w-full bg-green-500 hover:bg-green-400"
+            >
+              Create Session
+            </Button>
           </div>
         )}
       </DialogContent>

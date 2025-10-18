@@ -49,7 +49,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable}`}
     >
-      <body className="overflow-hidden antialiased">
+      <body className="antialiased">
         <ReactLenis root>
           <Overlay />
           <div className="relative z-10">{children}</div>
