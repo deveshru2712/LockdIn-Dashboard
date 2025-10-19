@@ -4,10 +4,7 @@ import FloatingClock from "@/components/FloatingClock";
 
 export default function Home() {
   return (
-    <div
-      className="relative flex w-full flex-col items-center justify-center p-8"
-      data-lenis-prevent
-    >
+    <div className="relative flex w-full flex-col items-center justify-center p-8">
       <HeroSection />
       <FloatingClock />
     </div>

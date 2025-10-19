@@ -61,6 +61,11 @@ export default function Blocker() {
 
       setBlockedUrls(localList);
 
+      //  giving priority over to local storage and
+      //   syncing the data to the extension
+
+      sendBlockedSitesToExtension(localList);
+
       setTimeout(() => setShowBlockedContainer(true), 2000);
     };
     loadBlockedSites();

@@ -5,7 +5,6 @@ import {
   Plus_Jakarta_Sans,
   Libre_Baskerville,
 } from "next/font/google";
-import { ReactLenis } from "@/utils/lenis";
 import "./globals.css";
 import Overlay from "@/components/Overlay";
 import { Toaster } from "sonner";
@@ -47,14 +46,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable}`}
+      className={`${geistSans.variable} overflow-hidden  ${inter.variable} ${jakarta.variable} ${libre.variable}`}
     >
       <body className="antialiased">
-        <ReactLenis root>
-          <Overlay />
-          <div className="relative z-10">{children}</div>
-          <Toaster />
-        </ReactLenis>
+        <Overlay />
+        <div className="relative z-10">{children}</div>
+        <Toaster />
       </body>
     </html>
   );
