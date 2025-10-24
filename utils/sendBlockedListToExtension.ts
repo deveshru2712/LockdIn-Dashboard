@@ -7,12 +7,16 @@ export default async function sendBlockedSitesToExtension(
       throw new Error("Invalid blockedSites array");
     }
 
+    const payload = session
+      ? {
+          type: "UPDATE_SESSION_BLOCKED_SITES",
+          sessionBlockedSites: blockedSites,
+        }
+      : { type: "UPDATE_BLOCKED_SITES", blockedSites };
+
     const response = await chrome.runtime.sendMessage(
       process.env.NEXT_PUBLIC_EXTENSION_ID,
-      {
-        type: session ? "UPDATE_SESSION_BLOCKED_SITES" : "UPDATE_BLOCKED_SITES",
-        blockedSites,
-      },
+      payload,
     );
 
     console.log("🔁 Extension response:", response);
