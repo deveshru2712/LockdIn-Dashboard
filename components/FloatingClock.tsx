@@ -15,6 +15,7 @@ import {
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import SessionBlocker from "./SessionBlocker";
+import sendBlockedSitesToExtension from "@/utils/sendBlockedListToExtension";
 
 interface Preset {
   label: string;
@@ -145,6 +146,8 @@ export default function FloatingClock() {
       "session-blocked-website",
       JSON.stringify(sessionBlockedUrls),
     );
+
+    sendBlockedSitesToExtension(sessionBlockedUrls, true);
   }
 
   function endSession() {
@@ -153,10 +156,14 @@ export default function FloatingClock() {
     if (!confirmEnd) return;
     setSessionEnd(null);
     setSessionTotalMs(null);
-    try {
-      localStorage.removeItem(LS_END_KEY);
-      localStorage.removeItem(LS_TOTAL_KEY);
-    } catch {}
+    setSessionBlockedUrls([]);
+
+    localStorage.removeItem(LS_END_KEY);
+    localStorage.removeItem(LS_TOTAL_KEY);
+    localStorage.removeItem("session-blocked-website");
+
+    // sending message to extension to remove the sesion-blocked-urls
+    sendBlockedSitesToExtension([], true);
   }
 
   const endTimeDisplay = useMemo(() => {

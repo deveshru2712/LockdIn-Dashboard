@@ -16,7 +16,6 @@ import {
   FrequentlyBlockedWebsite,
   getCachedMostFrequentlyBlockedSites,
 } from "@/components/main/Blocker/actions";
-import { toast } from "sonner";
 
 interface SessionBlockerProps {
   sessionBlockedUrls: string[];
