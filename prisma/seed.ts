@@ -47,7 +47,7 @@ async function main() {
 
   for (const website of predefinedWebsites) {
     await prisma.predefinedWebsite.upsert({
-      where: { url: website.url },
+      where: { domain: website.domain },
       update: website,
       create: website,
     });
