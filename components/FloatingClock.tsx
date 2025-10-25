@@ -72,7 +72,7 @@ export default function FloatingClock() {
   const [sessionTotalMs, setSessionTotalMs] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
 
-  // load session blocked website
+  // Load session blocked websites
   useEffect(() => {
     const loadBlockedSites = async () => {
       if (typeof window === "undefined") return;
@@ -88,6 +88,7 @@ export default function FloatingClock() {
     loadBlockedSites();
   }, []);
 
+  //  Restore or cleanup existing session
   useEffect(() => {
     const end = GetTimeFromLocalStorage(LS_END_KEY);
     const total = GetTimeFromLocalStorage(LS_TOTAL_KEY);
@@ -98,10 +99,13 @@ export default function FloatingClock() {
       try {
         localStorage.removeItem(LS_END_KEY);
         localStorage.removeItem(LS_TOTAL_KEY);
+        // remove the session-blocked website
+        sendBlockedSitesToExtension([], true);
       } catch {}
     }
   }, []);
 
+  // ticking effect
   useEffect(() => {
     if (!sessionEnd) return;
     const i = setInterval(() => setTick((t) => t + 1), 1000);
@@ -123,6 +127,25 @@ export default function FloatingClock() {
     );
   }, [active, sessionTotalMs, remainingMs]);
 
+  //  Auto-end session when timer reaches zero
+  useEffect(() => {
+    if (!sessionEnd) return;
+    if (remainingMs > 0) return;
+
+    console.log("Session ended automatically — notifying extension");
+
+    setSessionEnd(null);
+    setSessionTotalMs(null);
+    setSessionBlockedUrls([]);
+
+    localStorage.removeItem(LS_END_KEY);
+    localStorage.removeItem(LS_TOTAL_KEY);
+    localStorage.removeItem("session-blocked-website");
+
+    // sending message to remove the session-blocked-website
+    sendBlockedSitesToExtension([], true);
+  }, [remainingMs, sessionEnd]);
+
   function persist(end: number, totalMs: number | null) {
     try {
       localStorage.setItem(LS_END_KEY, String(end));
@@ -141,7 +164,7 @@ export default function FloatingClock() {
     setSessionTotalMs(ms);
     persist(end, ms);
 
-    // saving at the end
+    // save current blocked URLs
     localStorage.setItem(
       "session-blocked-website",
       JSON.stringify(sessionBlockedUrls),
@@ -162,7 +185,6 @@ export default function FloatingClock() {
     localStorage.removeItem(LS_TOTAL_KEY);
     localStorage.removeItem("session-blocked-website");
 
-    // sending message to extension to remove the sesion-blocked-urls
     sendBlockedSitesToExtension([], true);
   }
 

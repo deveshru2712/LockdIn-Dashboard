@@ -19,7 +19,6 @@ export default async function sendBlockedSitesToExtension(
       payload,
     );
 
-    console.log("🔁 Extension response:", response);
     return response;
   } catch (error) {
     console.error("❌ Failed to send blocked sites to extension:", error);
