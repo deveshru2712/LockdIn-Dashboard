@@ -174,7 +174,7 @@ export default function Blocker() {
   };
 
   return (
-    <div className="font-jakarta w-full max-w-lg space-y-6" data-lenis-prevent>
+    <div className="font-jakarta w-full max-w-lg space-y-6">
       <div className="relative">
         <div className="flex gap-2">
           <div className="flex-1">
@@ -226,7 +226,7 @@ export default function Blocker() {
             >
               <div className="p-2">
                 <p className="mb-2 px-2 text-xs text-gray-500">
-                  Common websites:
+                  <strong>Common websites:</strong>
                 </p>
                 <div className="space-y-1">
                   {frequentlyBlockedWebsite.map((website) => {
@@ -268,8 +268,11 @@ export default function Blocker() {
           className="space-y-3"
         >
           <Separator />
+          <h2 className="text-lg font-semibold text-gray-800">
+            <strong>Manage Your Blocked Websites</strong>
+          </h2>
           <h3 className="text-sm font-medium text-gray-600">
-            Blocked Websites ({blockedUrls.length})
+            <strong>Currently Blocked</strong> ({blockedUrls.length})
           </h3>
           <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
             {blockedUrls.map((url) => (

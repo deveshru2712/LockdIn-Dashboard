@@ -2,14 +2,14 @@ import React from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Site Blocked - LockdIn",
-  description: "This site has been blocked by LockdIn to help you stay focused and productive. Manage your blocklist from the dashboard.",
+  title: "Error - LockdIn",
+  description: "An error occurred while using LockdIn. Please try again or contact support if the issue persists.",
   robots: {
     index: false,
     follow: false,
   },
   alternates: {
-    canonical: "https://lockdin.in/blocked",
+    canonical: "https://lockdin.in/error",
   },
 };
 

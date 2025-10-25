@@ -11,16 +11,16 @@ const Header = () => {
       >
         <Zap color="lightblue" />
         <span className="ml-1 text-base font-medium text-shadow-2xs">
-          Reclaim Your Focus
+          <strong>Reclaim Your Focus</strong>
         </span>
       </Badge>
       <div className="space-y-8 text-center font-sans">
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
           Ready to Lock In ?
         </h1>
-        <p className="mx-auto max-w-md text-lg leading-relaxed font-medium text-gray-700">
-          Block distracting websites and reclaim your productivity
-        </p>
+        <h2 className="text-2xl font-semibold text-gray-800 md:text-3xl">
+          Boost Your Focus with Website Blocker
+        </h2>
       </div>
     </div>
   );

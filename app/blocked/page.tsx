@@ -32,11 +32,11 @@ export default function Error() {
           </motion.div>
 
           <h1 className="text-2xl font-semibold tracking-tight">
-            Site is Blocked
+            <strong>Site is Blocked</strong>
           </h1>
           <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-            <strong>Lockdin</strong> has blocked this distracting site to help
-            you stay focused and productive.
+            <strong>Lockdin</strong> has blocked this <strong>distracting site</strong> to help
+            you stay <strong>focused and productive</strong>.
           </p>
         </header>
 
@@ -57,8 +57,8 @@ export default function Error() {
           </div>
 
           <footer className="text-muted-foreground mt-4 text-center text-xs">
-            💡 Tip: You can manage your blocklist anytime from the Lockdin
-            Dashboard.
+            💡 <strong>Tip:</strong> You can manage your <strong>blocklist</strong> anytime from the <strong>Lockdin
+            Dashboard</strong>.
           </footer>
         </motion.div>
       </motion.section>
