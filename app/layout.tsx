@@ -12,36 +12,43 @@ import { Toaster } from "sonner";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const libre = Libre_Baskerville({
   variable: "--font-libre-baskerville",
   subsets: ["latin"],
   weight: ["700"],
+  display: "swap",
 });
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta-sans",
-  subsets: ["latin"],
-});
-
-// Metadata
 export const metadata: Metadata = {
   metadataBase: new URL("https://lockdin.in"),
-  title: "LockdIn Dashboard - Stay Focused and Productive",
+  title: {
+    default: "LockdIn Dashboard – Boost Focus & Productivity",
+    template: "%s | LockdIn Dashboard",
+  },
   description:
-    "LockdIn helps you stay focused by blocking distracting websites. Manage your productivity with our powerful dashboard and browser extension.",
+    "LockdIn Dashboard helps you manage blocked sites, monitor focus sessions, and stay productive with seamless integration to the LockdIn Chrome extension.",
   keywords: [
-    "productivity",
-    "focus",
+    "LockdIn",
+    "productivity dashboard",
+    "focus tracker",
     "website blocker",
+    "chrome extension companion",
     "time management",
-    "distraction blocker",
   ],
   authors: [{ name: "Devesh Chandra" }],
   creator: "LockdIn",
@@ -62,9 +69,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://lockdin.in",
     siteName: "LockdIn",
-    title: "LockdIn Dashboard - Stay Focused and Productive",
+    title: "LockdIn Dashboard – Boost Focus & Productivity",
     description:
-      "LockdIn helps you stay focused by blocking distracting websites. Manage your productivity with our powerful dashboard and browser extension.",
+      "A productivity dashboard to manage and sync your LockdIn Chrome extension settings.",
     images: [
       {
         url: "/og-image.png",
@@ -76,32 +83,33 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "LockdIn Dashboard - Stay Focused and Productive",
+    title: "LockdIn Dashboard – Boost Focus & Productivity",
     description:
-      "LockdIn helps you stay focused by blocking distracting websites. Manage your productivity with our powerful dashboard and browser extension.",
+      "Manage focus sessions, blocked sites, and productivity insights with LockdIn Dashboard — the web companion for your Chrome extension.",
     images: ["/og-image.png"],
   },
   alternates: {
     canonical: "https://lockdin.in",
   },
+  category: "productivity",
+  applicationName: "LockdIn Dashboard",
 };
 
-// Root layout
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} overflow-hidden ${inter.variable} ${jakarta.variable} ${libre.variable}`}
+      className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable} scroll-smooth`}
     >
-      <body className="antialiased">
+      <body className="bg-gray-50 text-gray-900 antialiased">
         <Overlay />
-        <div className="relative z-10">{children}</div>
-        <Toaster />
+        <main className="relative z-10 min-h-screen">{children}</main>
+        <Toaster richColors position="top-center" />
       </body>
     </html>
   );

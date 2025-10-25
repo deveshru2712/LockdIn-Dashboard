@@ -18,7 +18,7 @@ const getMostFrequentlyBlockedSitesInternal = async (): Promise<
 
     return frequentlyBlockedWebsite;
   } catch (error) {
-    console.log(
+    console.error(
       "Error occurred while fetching the frequently blocked website",
       error,
     );

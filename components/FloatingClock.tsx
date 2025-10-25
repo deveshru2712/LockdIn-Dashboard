@@ -80,7 +80,6 @@ export default function FloatingClock() {
       const local = localStorage.getItem("session-blocked-website");
       const localList = local ? JSON.parse(local) : [];
 
-      console.log("here is the list of session blocked website", localList);
       setSessionBlockedUrls(localList);
 
       setTimeout(() => setShowBlockedContainer(true), 2000);
@@ -131,8 +130,6 @@ export default function FloatingClock() {
   useEffect(() => {
     if (!sessionEnd) return;
     if (remainingMs > 0) return;
-
-    console.log("Session ended automatically — notifying extension");
 
     setSessionEnd(null);
     setSessionTotalMs(null);
