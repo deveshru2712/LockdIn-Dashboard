@@ -64,7 +64,7 @@ export default function ErrorPage({
             transition={{ duration: 0.4 }}
             className="bg-destructive/10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
           >
-            <SelectedIcon className="text-destructive h-7 w-7" />
+            <SelectedIcon className="text-destructive h-8 w-8" />
           </motion.div>
 
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
