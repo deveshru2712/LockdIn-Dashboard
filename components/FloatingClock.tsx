@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { AlarmClock, Play, X } from "lucide-react";
 import { Button } from "./ui/button";
@@ -16,6 +16,8 @@ import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import SessionBlocker from "./SessionBlocker";
 import sendBlockedSitesToExtension from "@/utils/sendBlockedListToExtension";
+import { toast } from "sonner";
+import Confetti from "react-confetti";
 
 interface Preset {
   label: string;
@@ -23,7 +25,7 @@ interface Preset {
 }
 
 const PRESETS: Preset[] = [
-  { label: "30m", ms: 30 * 60 * 1000 },
+  { label: "30m", ms: 1 * 10 * 1000 },
   { label: "1h", ms: 60 * 60 * 1000 },
   { label: "3h", ms: 3 * 60 * 60 * 1000 },
   { label: "6h", ms: 6 * 60 * 60 * 1000 },
@@ -48,7 +50,10 @@ function FormatTime(ms: number) {
       "0",
     )}:${String(seconds).padStart(2, "0")}`;
   }
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+    2,
+    "0",
+  )}`;
 }
 
 function GetTimeFromLocalStorage(key: string): number | null {
@@ -71,6 +76,7 @@ export default function FloatingClock() {
   const [sessionEnd, setSessionEnd] = useState<number | null>(null);
   const [sessionTotalMs, setSessionTotalMs] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Load session blocked websites
   useEffect(() => {
@@ -81,13 +87,12 @@ export default function FloatingClock() {
       const localList = local ? JSON.parse(local) : [];
 
       setSessionBlockedUrls(localList);
-
       setTimeout(() => setShowBlockedContainer(true), 2000);
     };
     loadBlockedSites();
   }, []);
 
-  //  Restore or cleanup existing session
+  // Restore or cleanup existing session
   useEffect(() => {
     const end = GetTimeFromLocalStorage(LS_END_KEY);
     const total = GetTimeFromLocalStorage(LS_TOTAL_KEY);
@@ -98,7 +103,6 @@ export default function FloatingClock() {
       try {
         localStorage.removeItem(LS_END_KEY);
         localStorage.removeItem(LS_TOTAL_KEY);
-        // remove the session-blocked website
         sendBlockedSitesToExtension([], true);
       } catch {}
     }
@@ -130,17 +134,23 @@ export default function FloatingClock() {
   useEffect(() => {
     if (!sessionEnd) return;
     if (remainingMs > 0) return;
+    if (showCelebration) return;
 
     setSessionEnd(null);
     setSessionTotalMs(null);
     setSessionBlockedUrls([]);
-
     localStorage.removeItem(LS_END_KEY);
     localStorage.removeItem(LS_TOTAL_KEY);
     localStorage.removeItem("session-blocked-website");
-
-    // sending message to remove the session-blocked-website
     sendBlockedSitesToExtension([], true);
+    setOpen(false);
+
+    setShowCelebration(true);
+    const timeout = setTimeout(() => {
+      setShowCelebration(false);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
   }, [remainingMs, sessionEnd]);
 
   function persist(end: number, totalMs: number | null) {
@@ -155,13 +165,12 @@ export default function FloatingClock() {
   }
 
   function startWithDuration(ms: number) {
-    if (setSessionBlockedUrls.length == 0) return;
+    if (sessionBlockedUrls.length == 0) return;
     const end = Date.now() + ms;
     setSessionEnd(end);
     setSessionTotalMs(ms);
     persist(end, ms);
 
-    // save current blocked URLs
     localStorage.setItem(
       "session-blocked-website",
       JSON.stringify(sessionBlockedUrls),
@@ -194,149 +203,196 @@ export default function FloatingClock() {
   }, [sessionEnd]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          aria-label={
-            active
-              ? `Session active, ${FormatTime(remainingMs)} remaining`
-              : "Start a focus session"
-          }
-          size="icon"
-          className={`fixed right-8 bottom-8 h-12 w-12 cursor-pointer rounded-full shadow-lg transition-transform hover:scale-105 ${
-            active
-              ? "bg-primary text-primary-foreground ring-primary/40 animate-pulse ring-2"
-              : "bg-primary text-primary-foreground hover:bg-primary/90"
-          }`}
-        >
-          {active ? (
-            <span className="text-xs font-medium" aria-hidden>
-              {FormatTime(remainingMs)}
-            </span>
-          ) : (
-            <AlarmClock className="h-5 w-5" aria-hidden />
-          )}
-          <span className="sr-only">
-            {active ? "Focus session active" : "Open focus timer"}
-          </span>
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="sm:max-w-[420px]">
-        <DialogHeader>
-          <DialogTitle>
-            {active ? "Focus Session Active" : "Start a LockdIn Session"}
-          </DialogTitle>
-          <DialogDescription>
-            {active
-              ? "Stay focused until the session ends. You can end it early if needed."
-              : "Pick a preset duration to stay focused."}
-          </DialogDescription>
-        </DialogHeader>
-
-        {active ? (
-          <div className="grid gap-4">
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <div className="flex flex-col">
-                <span className="text-muted-foreground text-sm">
-                  Time remaining
-                </span>
-                <span className="text-2xl font-semibold tabular-nums">
-                  {FormatTime(remainingMs)}
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="text-muted-foreground text-sm">Ends</span>
-                <div className="font-medium">{endTimeDisplay}</div>
-              </div>
-            </div>
-            {sessionTotalMs ? (
-              <div className="grid gap-2">
-                <div
-                  className="bg-muted h-2 w-full overflow-hidden rounded-full"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(progressPct)}
-                >
-                  <div
-                    className="bg-primary h-full"
-                    style={{
-                      width: `${progressPct}%`,
-                      transition: "width 0.6s ease",
-                    }}
-                  />
-                </div>
-                <div className="text-muted-foreground flex items-center justify-between text-xs">
-                  <span>Started</span>
-                  <span>{Math.round(progressPct)}%</span>
-                  <span>Complete</span>
-                </div>
-              </div>
-            ) : null}
-
-            {sessionBlockedUrls.length > 0 && showBlockedContainer && (
-              <motion.div
-                initial={{ opacity: 0, filter: `blur(10px)` }}
-                animate={{ opacity: 1, filter: `blur(0px)` }}
-                transition={{ duration: 0.3 }}
-                className="space-y-3"
-              >
-                <Separator />
-                <h3 className="text-sm font-medium text-gray-600">
-                  Blocked Websites ({sessionBlockedUrls.length})
-                </h3>
-                <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
-                  {sessionBlockedUrls.map((url) => (
-                    <Badge
-                      key={url}
-                      variant="secondary"
-                      className="flex items-center gap-1 px-2 py-1 transition-all duration-300 hover:bg-slate-50"
-                    >
-                      <span className="text-xs">{url}</span>
-                    </Badge>
-                  ))}
-                </div>
-              </motion.div>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            aria-label={
+              active
+                ? `Session active, ${FormatTime(remainingMs)} remaining`
+                : "Start a focus session"
+            }
+            size="icon"
+            className={`fixed right-8 bottom-8 h-12 w-12 cursor-pointer rounded-full shadow-lg transition-transform hover:scale-105 ${
+              active
+                ? "bg-primary text-primary-foreground ring-primary/40 animate-pulse ring-2"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            }`}
+          >
+            {active ? (
+              <span className="text-xs font-medium" aria-hidden>
+                {FormatTime(remainingMs)}
+              </span>
+            ) : (
+              <AlarmClock className="h-5 w-5" aria-hidden />
             )}
+            <span className="sr-only">
+              {active ? "Focus session active" : "Open focus timer"}
+            </span>
+          </Button>
+        </DialogTrigger>
 
-            <Button
-              onClick={endSession}
-              className="cursor-pointer hover:bg-red-400"
-            >
-              <X />
-              End Session
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            <SessionBlocker
-              sessionBlockedUrls={sessionBlockedUrls}
-              setSessionBlockedUrls={setSessionBlockedUrls}
-            />
-            <div className="grid grid-cols-3 gap-2">
-              {PRESETS.map((p) => (
-                <Button
-                  key={p.label}
-                  variant="secondary"
-                  className={`${sessionMs == p.ms ? "border border-red-400" : ""} hover:border hover:border-red-300`}
-                  onClick={() => setSessionMs(p.ms)}
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>
+              {active ? "Focus Session Active" : "Start a LockdIn Session"}
+            </DialogTitle>
+            <DialogDescription>
+              {active
+                ? "Stay focused until the session ends. You can end it early if needed."
+                : "Pick a preset duration to stay focused."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {active ? (
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <div className="flex flex-col">
+                  <span className="text-muted-foreground text-sm">
+                    Time remaining
+                  </span>
+                  <span className="text-2xl font-semibold tabular-nums">
+                    {FormatTime(remainingMs)}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-muted-foreground text-sm">Ends</span>
+                  <div className="font-medium">{endTimeDisplay}</div>
+                </div>
+              </div>
+
+              {sessionTotalMs ? (
+                <div className="grid gap-2">
+                  <div
+                    className="bg-muted h-2 w-full overflow-hidden rounded-full"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(progressPct)}
+                  >
+                    <div
+                      className="bg-primary h-full"
+                      style={{
+                        width: `${progressPct}%`,
+                        transition: "width 0.6s ease",
+                      }}
+                    />
+                  </div>
+                  <div className="text-muted-foreground flex items-center justify-between text-xs">
+                    <span>Started</span>
+                    <span>{Math.round(progressPct)}%</span>
+                    <span>Complete</span>
+                  </div>
+                </div>
+              ) : null}
+
+              {sessionBlockedUrls.length > 0 && showBlockedContainer && (
+                <motion.div
+                  initial={{ opacity: 0, filter: `blur(10px)` }}
+                  animate={{ opacity: 1, filter: `blur(0px)` }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-3"
                 >
-                  <Play className="mr-2 h-4 w-4" />
-                  {p.label}
-                </Button>
-              ))}
+                  <Separator />
+                  <h3 className="text-sm font-medium text-gray-600">
+                    Blocked Websites ({sessionBlockedUrls.length})
+                  </h3>
+                  <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
+                    {sessionBlockedUrls.map((url) => (
+                      <Badge
+                        key={url}
+                        variant="secondary"
+                        className="flex items-center gap-1 px-2 py-1 transition-all duration-300 hover:bg-slate-50"
+                      >
+                        <span className="text-xs">{url}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              <Button
+                onClick={endSession}
+                className="cursor-pointer hover:bg-red-400"
+              >
+                <X />
+                End Session
+              </Button>
             </div>
-            <Button
-              disabled={sessionBlockedUrls.length == 0}
-              onClick={() => startWithDuration(sessionMs)}
-              className="w-full bg-green-500 hover:bg-green-400"
+          ) : (
+            <div className="grid gap-4">
+              <SessionBlocker
+                sessionBlockedUrls={sessionBlockedUrls}
+                setSessionBlockedUrls={setSessionBlockedUrls}
+              />
+              <div className="grid grid-cols-3 gap-2">
+                {PRESETS.map((p) => (
+                  <Button
+                    key={p.label}
+                    variant="secondary"
+                    className={`${
+                      sessionMs == p.ms ? "border border-red-400" : ""
+                    } hover:border hover:border-red-300`}
+                    onClick={() => setSessionMs(p.ms)}
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
+              <Button
+                disabled={sessionBlockedUrls.length == 0}
+                onClick={() => startWithDuration(sessionMs)}
+                className="w-full bg-green-500 hover:bg-green-400"
+              >
+                Create Session
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            key="celebration"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            onClick={() => setShowCelebration(false)}
+            className="bg-background/50 fixed inset-0 z-[9999] flex flex-col items-center justify-center backdrop-blur-sm"
+          >
+            <Confetti
+              recycle={false}
+              numberOfPieces={250}
+              run={showCelebration}
+              width={typeof window !== "undefined" ? window.innerWidth : 0}
+              height={typeof window !== "undefined" ? window.innerHeight : 0}
+            />
+
+            <motion.h1
+              initial={{ y: 30, opacity: 0, scale: 0.9 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              className="px-4 text-center text-3xl font-bold text-green-600"
             >
-              Create Session
-            </Button>
-          </div>
+              🎉 Focus Session Complete!
+            </motion.h1>
+
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="mt-2 px-6 text-center text-base text-gray-600"
+            >
+              You’ve earned a well-deserved break — great job!
+            </motion.p>
+          </motion.div>
         )}
-      </DialogContent>
-    </Dialog>
+      </AnimatePresence>
+    </>
   );
 }
