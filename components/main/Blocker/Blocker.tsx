@@ -19,6 +19,7 @@ import {
 } from "./actions";
 import { toast } from "sonner";
 import sendBlockedSitesToExtension from "@/utils/sendBlockedListToExtension";
+import { cn } from "@/lib/utils";
 
 export default function Blocker() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
@@ -29,20 +30,17 @@ export default function Blocker() {
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showBlockedContainer, setShowBlockedContainer] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Fetch frequently blocked sites
   useEffect(() => {
     const fetchFrequentlyBlockedWebsite = async () => {
       setIsLoading(true);
       try {
         const result = await getCachedMostFrequentlyBlockedSites();
         if (result) setFrequentlyBlockedWebsite(result);
-      } catch (err) {
-        console.error("Error fetching frequently blocked websites:", err);
+      } catch {
         setError("Failed to load suggestions");
       } finally {
         setIsLoading(false);
@@ -51,27 +49,17 @@ export default function Blocker() {
     fetchFrequentlyBlockedWebsite();
   }, []);
 
-  // get blocked site
   useEffect(() => {
     const loadBlockedSites = async () => {
       if (typeof window === "undefined") return;
-
       const local = localStorage.getItem("blocked-website");
       const localList = local ? JSON.parse(local) : [];
-
       setBlockedUrls(localList);
-
-      //  giving priority over to local storage and
-      //   syncing the data to the extension
-
       sendBlockedSitesToExtension(localList);
-
-      setTimeout(() => setShowBlockedContainer(true), 2000);
     };
     loadBlockedSites();
   }, []);
 
-  // Suggestion dropdown close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -91,11 +79,9 @@ export default function Blocker() {
     url: string,
   ): { isValid: boolean; normalized: string } => {
     let trimmed = url.trim();
-
     if (!/^https?:\/\//i.test(trimmed)) {
       trimmed = "https://" + trimmed;
     }
-
     try {
       const { hostname } = new URL(trimmed);
       const parts = hostname.split(".");
@@ -125,17 +111,14 @@ export default function Blocker() {
     const updatedList = [...blockedUrls, normalized];
     setBlockedUrls(updatedList);
     toast.success("website successfully blocked.");
-
-    // setting it locally
     localStorage.setItem("blocked-website", JSON.stringify(updatedList));
-    // sending it to the extension
     sendBlockedSitesToExtension(updatedList);
+    setInputUrl("");
   };
 
   const removeUrl = async (urlToRemove: string) => {
     const updatedList = blockedUrls.filter((url) => url !== urlToRemove);
     setBlockedUrls(updatedList);
-
     localStorage.setItem("blocked-website", JSON.stringify(updatedList));
     sendBlockedSitesToExtension(updatedList);
   };
@@ -144,7 +127,6 @@ export default function Blocker() {
     if (e.key === "Enter") {
       e.preventDefault();
       addUrl();
-      setInputUrl("");
     } else if (e.key === "Escape") {
       setShowSuggestions(false);
     }
@@ -153,11 +135,9 @@ export default function Blocker() {
   const handleSuggestionClick = async (url: string) => {
     const { normalized } = grabDomainUrl(url);
     if (blockedUrls.includes(normalized)) return;
-
     const updatedList = [...blockedUrls, normalized];
     setBlockedUrls(updatedList);
     toast.success("website successfully blocked.");
-
     localStorage.setItem("blocked-website", JSON.stringify(updatedList));
     sendBlockedSitesToExtension(updatedList);
   };
@@ -260,47 +240,45 @@ export default function Blocker() {
           )}
       </div>
 
-      {blockedUrls.length > 0 && showBlockedContainer && (
-        <motion.div
-          initial={{ opacity: 0, filter: `blur(10px)` }}
-          animate={{ opacity: 1, filter: `blur(0px)` }}
-          transition={{ duration: 0.3 }}
-          className="space-y-3"
-        >
-          <Separator />
-          <h2 className="text-lg font-semibold text-gray-800">
-            <strong>Manage Your Blocked Websites</strong>
-          </h2>
-          <h3 className="text-sm font-medium text-gray-600">
-            <strong>Currently Blocked</strong> ({blockedUrls.length})
-          </h3>
-          <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
-            {blockedUrls.map((url) => (
-              <Badge
-                key={url}
-                variant="secondary"
-                className="flex items-center gap-1 px-2 py-1 transition-all duration-300 hover:bg-slate-50"
-              >
-                <span className="text-xs">{url}</span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => removeUrl(url)}
-                      className="hover:text-destructive ml-1 rounded-sm p-0.5"
-                      aria-label={`Unblock ${url}`}
-                    >
-                      <X className="h-3 w-3 cursor-pointer" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Unblock</p>
-                  </TooltipContent>
-                </Tooltip>
-              </Badge>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      <motion.div
+        initial={{ opacity: 0, filter: `blur(10px)` }}
+        animate={{
+          opacity: blockedUrls.length > 0 ? 1 : 0,
+          filter: `blur(${blockedUrls.length > 0 ? 0 : 10}px)`,
+        }}
+        transition={{ duration: 0.7 }}
+        className={cn("space-y-3")}
+      >
+        <Separator />
+        <h3 className="text-sm font-medium text-gray-600">
+          <strong>Currently Blocked</strong> ({blockedUrls.length})
+        </h3>
+        <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
+          {blockedUrls.map((url) => (
+            <Badge
+              key={url}
+              variant="secondary"
+              className="flex items-center gap-1 px-2 py-1 transition-all duration-300 hover:bg-slate-50"
+            >
+              <span className="text-xs">{url}</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => removeUrl(url)}
+                    className="hover:text-destructive ml-1 rounded-sm p-0.5"
+                    aria-label={`Unblock ${url}`}
+                  >
+                    <X className="h-3 w-3 cursor-pointer" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Unblock</p>
+                </TooltipContent>
+              </Tooltip>
+            </Badge>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }

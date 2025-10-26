@@ -104,12 +104,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable} scroll-smooth`}
+      className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable} overflow-hidden`}
     >
       <body className="bg-gray-50 text-gray-900 antialiased">
         <Overlay />
         <main className="relative z-10 min-h-screen">{children}</main>
-        <Toaster richColors position="top-center" />
+        <Toaster richColors position="bottom-center" />
       </body>
     </html>
   );
