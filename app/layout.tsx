@@ -8,6 +8,8 @@ import {
 import "./globals.css";
 import Overlay from "@/components/Overlay";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -111,6 +113,8 @@ export default function RootLayout({
         <main className="relative z-10 min-h-screen">{children}</main>
         <Toaster richColors position="bottom-center" />
       </body>
+      <Analytics />
+      <SpeedInsights />
     </html>
   );
 }
