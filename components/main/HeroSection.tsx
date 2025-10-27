@@ -104,11 +104,11 @@ export default function HeroSection() {
             delay: 0.8,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
-          className="from-background via-background/90 to-background/80 fixed right-0 bottom-8 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-1.5 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm"
+          className="from-background via-background/90 to-background/80 fixed inset-x-0 bottom-6 mx-auto flex max-w-xs items-center justify-center rounded-md border bg-gradient-to-r px-4 py-2 text-center shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm sm:max-w-sm"
         >
           <div className="flex flex-col">
-            <h2 className="text-foreground text-sm font-medium">
-              Chrome extension are only available on Desktop.
+            <h2 className="text-foreground px-5 text-sm leading-snug font-medium">
+              Chrome extensions are only available on Desktop.
             </h2>
           </div>
         </motion.div>
