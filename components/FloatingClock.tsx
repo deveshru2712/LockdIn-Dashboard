@@ -158,6 +158,7 @@ export default function FloatingClock() {
   function endSession() {
     if (!active) return;
     setClosePopup(true);
+    setOpen(false);
   }
 
   // Confirm end
