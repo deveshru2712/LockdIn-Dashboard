@@ -7,21 +7,23 @@ export default function useMobileDevice() {
     if (typeof window === "undefined") return;
 
     const detectMobile = () => {
-      const ua = navigator.userAgent || navigator.vendor || "";
-      const isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
-      const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-      const smallScreen =
-        Math.max(window.innerWidth, window.innerHeight) <= 800;
+      const width = window.innerWidth;
+      const isReallySmall = width <= 800;
 
-      setIsMobile(isMobileUA || (hasTouch && smallScreen));
+      const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+      setIsMobile(isReallySmall || (hasTouch && width <= 900));
     };
 
     detectMobile();
 
     window.addEventListener("resize", detectMobile);
+    window.addEventListener("orientationchange", detectMobile);
 
-    // Cleanup
-    return () => window.removeEventListener("resize", detectMobile);
+    return () => {
+      window.removeEventListener("resize", detectMobile);
+      window.removeEventListener("orientationchange", detectMobile);
+    };
   }, []);
 
   return isMobile;

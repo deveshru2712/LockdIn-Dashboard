@@ -106,7 +106,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable} overflow-hidden`}
+      className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable}`}
     >
       <body className="bg-gray-50 text-gray-900 antialiased">
         <Overlay />

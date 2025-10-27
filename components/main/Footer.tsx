@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Footer() {
   return (
-    <div className="flex flex-col items-center justify-center gap-10">
+    <div className="flex flex-col items-center justify-center gap-3 md:gap-10">
       <div className="max-w-lg text-center">
         <p className="leading-relaxed font-medium text-gray-600">
           Set focused work sessions by temporarily blocking sites like social
