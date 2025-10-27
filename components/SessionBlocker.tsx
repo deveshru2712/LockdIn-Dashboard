@@ -16,6 +16,7 @@ import {
   FrequentlyBlockedWebsite,
   getCachedMostFrequentlyBlockedSites,
 } from "@/components/main/Blocker/actions";
+import { toast } from "sonner"; // ✅ added for feedback
 
 interface SessionBlockerProps {
   sessionBlockedUrls: string[];
@@ -38,6 +39,8 @@ export default function SessionBlocker({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  const MAX_BLOCKED_URLS = 4;
 
   // Fetch frequently blocked sites
   useEffect(() => {
@@ -96,6 +99,12 @@ export default function SessionBlocker({
     const trimmedUrl = inputUrl.trim();
     if (!trimmedUrl) return;
 
+    // ✅ Limit check
+    if (sessionBlockedUrls.length >= MAX_BLOCKED_URLS) {
+      toast.error(`You can block a maximum of ${MAX_BLOCKED_URLS} websites.`);
+      return;
+    }
+
     const { isValid, normalized } = grabDomainUrl(trimmedUrl);
     if (!isValid) {
       setError("Please enter a valid URL (e.g., facebook.com)");
@@ -112,6 +121,7 @@ export default function SessionBlocker({
 
     setInputUrl("");
     setError(null);
+    toast.success("Website successfully blocked.");
   };
 
   const removeUrl = async (urlToRemove: string) => {
@@ -129,11 +139,18 @@ export default function SessionBlocker({
   };
 
   const handleSuggestionClick = async (url: string) => {
+    // ✅ Limit check for suggestions
+    if (sessionBlockedUrls.length >= MAX_BLOCKED_URLS) {
+      toast.error(`You can block a maximum of ${MAX_BLOCKED_URLS} websites.`);
+      return;
+    }
+
     const { normalized } = grabDomainUrl(url);
     if (sessionBlockedUrls.includes(normalized)) return;
 
     const updatedList = [...sessionBlockedUrls, normalized];
     setSessionBlockedUrls(updatedList);
+    toast.success("Website successfully blocked.");
   };
 
   const handleInputFocus = () => {
@@ -161,11 +178,19 @@ export default function SessionBlocker({
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
               className="bg-white/70"
-              disabled={isLoading}
+              disabled={
+                isLoading || sessionBlockedUrls.length >= MAX_BLOCKED_URLS
+              }
             />
             {error && (
               <p id="url-error" className="mt-1 text-xs text-red-500">
                 {error}
+              </p>
+            )}
+            {sessionBlockedUrls.length >= MAX_BLOCKED_URLS && (
+              <p className="mt-1 text-xs text-yellow-600">
+                You’ve reached the maximum limit of {MAX_BLOCKED_URLS} blocked
+                sites for this session.
               </p>
             )}
           </div>
@@ -175,7 +200,11 @@ export default function SessionBlocker({
                 onClick={addUrl}
                 size="sm"
                 className="px-3"
-                disabled={isLoading || !inputUrl.trim()}
+                disabled={
+                  isLoading ||
+                  !inputUrl.trim() ||
+                  sessionBlockedUrls.length >= MAX_BLOCKED_URLS
+                }
               >
                 {isLoading ? (
                   <Loader2 size={28} className="animate-spin" />
@@ -212,9 +241,13 @@ export default function SessionBlocker({
                       <button
                         key={website.domain}
                         onClick={() => handleSuggestionClick(website.domain)}
-                        disabled={isAlreadyBlocked}
+                        disabled={
+                          isAlreadyBlocked ||
+                          sessionBlockedUrls.length >= MAX_BLOCKED_URLS
+                        }
                         className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm transition-colors duration-150 ${
-                          isAlreadyBlocked
+                          isAlreadyBlocked ||
+                          sessionBlockedUrls.length >= MAX_BLOCKED_URLS
                             ? "cursor-not-allowed opacity-50"
                             : "hover:bg-gray-50"
                         }`}
@@ -244,7 +277,7 @@ export default function SessionBlocker({
         >
           <Separator />
           <h3 className="text-sm font-medium text-gray-600">
-            Blocked Websites ({sessionBlockedUrls.length})
+            Blocked Websites ({sessionBlockedUrls.length}/{MAX_BLOCKED_URLS})
           </h3>
           <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
             {sessionBlockedUrls.map((url) => (

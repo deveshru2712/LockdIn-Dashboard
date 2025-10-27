@@ -34,6 +34,8 @@ export default function Blocker() {
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
+  const MAX_BLOCKED_URLS = 8;
+
   useEffect(() => {
     const fetchFrequentlyBlockedWebsite = async () => {
       setIsLoading(true);
@@ -97,6 +99,12 @@ export default function Blocker() {
     const trimmedUrl = inputUrl.trim();
     if (!trimmedUrl) return;
 
+    // Limit check
+    if (blockedUrls.length >= MAX_BLOCKED_URLS) {
+      toast.error(`You can block a maximum of ${MAX_BLOCKED_URLS} websites.`);
+      return;
+    }
+
     const { isValid, normalized } = grabDomainUrl(trimmedUrl);
     if (!isValid) {
       setError("Please enter a valid URL (e.g., facebook.com)");
@@ -110,7 +118,7 @@ export default function Blocker() {
 
     const updatedList = [...blockedUrls, normalized];
     setBlockedUrls(updatedList);
-    toast.success("website successfully blocked.");
+    toast.success("Website successfully blocked.");
     localStorage.setItem("blocked-website", JSON.stringify(updatedList));
     sendBlockedSitesToExtension(updatedList);
     setInputUrl("");
@@ -133,11 +141,17 @@ export default function Blocker() {
   };
 
   const handleSuggestionClick = async (url: string) => {
+    // Limit check for suggestions too
+    if (blockedUrls.length >= MAX_BLOCKED_URLS) {
+      toast.error(`You can block a maximum of ${MAX_BLOCKED_URLS} websites.`);
+      return;
+    }
+
     const { normalized } = grabDomainUrl(url);
     if (blockedUrls.includes(normalized)) return;
     const updatedList = [...blockedUrls, normalized];
     setBlockedUrls(updatedList);
-    toast.success("website successfully blocked.");
+    toast.success("Website successfully blocked.");
     localStorage.setItem("blocked-website", JSON.stringify(updatedList));
     sendBlockedSitesToExtension(updatedList);
   };
@@ -167,11 +181,17 @@ export default function Blocker() {
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
               className="bg-white/70"
-              disabled={isLoading}
+              disabled={isLoading || blockedUrls.length >= MAX_BLOCKED_URLS}
             />
             {error && (
               <p id="url-error" className="mt-1 text-xs text-red-500">
                 {error}
+              </p>
+            )}
+            {blockedUrls.length >= MAX_BLOCKED_URLS && (
+              <p className="mt-1 text-xs text-yellow-600">
+                You’ve reached the maximum limit of {MAX_BLOCKED_URLS} blocked
+                sites.
               </p>
             )}
           </div>
@@ -181,7 +201,11 @@ export default function Blocker() {
                 onClick={addUrl}
                 size="sm"
                 className="px-3"
-                disabled={isLoading || !inputUrl.trim()}
+                disabled={
+                  isLoading ||
+                  !inputUrl.trim() ||
+                  blockedUrls.length >= MAX_BLOCKED_URLS
+                }
               >
                 {isLoading ? (
                   <Loader2 size={28} className="animate-spin" />
@@ -217,9 +241,13 @@ export default function Blocker() {
                       <button
                         key={website.domain}
                         onClick={() => handleSuggestionClick(website.domain)}
-                        disabled={isAlreadyBlocked}
+                        disabled={
+                          isAlreadyBlocked ||
+                          blockedUrls.length >= MAX_BLOCKED_URLS
+                        }
                         className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm transition-colors duration-150 ${
-                          isAlreadyBlocked
+                          isAlreadyBlocked ||
+                          blockedUrls.length >= MAX_BLOCKED_URLS
                             ? "cursor-not-allowed opacity-50"
                             : "hover:bg-gray-50"
                         }`}
@@ -251,7 +279,8 @@ export default function Blocker() {
       >
         <Separator />
         <h3 className="text-sm font-medium text-gray-600">
-          <strong>Currently Blocked</strong> ({blockedUrls.length})
+          <strong>Currently Blocked</strong> ({blockedUrls.length}/
+          {MAX_BLOCKED_URLS})
         </h3>
         <div className="flex flex-wrap gap-2 rounded-md border bg-white/95 px-2.5 py-2 shadow-md">
           {blockedUrls.map((url) => (
