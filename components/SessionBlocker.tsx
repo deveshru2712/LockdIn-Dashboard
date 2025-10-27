@@ -20,6 +20,7 @@ import {
 interface SessionBlockerProps {
   sessionBlockedUrls: string[];
   setSessionBlockedUrls: React.Dispatch<React.SetStateAction<string[]>>;
+  hideContainer?: boolean;
 }
 
 export default function SessionBlocker({
@@ -147,7 +148,7 @@ export default function SessionBlocker({
   };
 
   return (
-    <div className="font-jakarta w-full max-w-lg space-y-6" data-lenis-prevent>
+    <div className="font-jakarta w-full max-w-lg space-y-6">
       <div className="relative">
         <div className="flex gap-2">
           <div className="flex-1">

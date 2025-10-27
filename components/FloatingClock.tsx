@@ -16,8 +16,8 @@ import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import SessionBlocker from "./SessionBlocker";
 import sendBlockedSitesToExtension from "@/utils/sendBlockedListToExtension";
-import { toast } from "sonner";
 import Confetti from "react-confetti";
+import ClosePopup from "./ClosePopup";
 
 interface Preset {
   label: string;
@@ -25,7 +25,7 @@ interface Preset {
 }
 
 const PRESETS: Preset[] = [
-  { label: "30m", ms: 1 * 10 * 1000 },
+  { label: "30m", ms: 30 * 60 * 1000 },
   { label: "1h", ms: 60 * 60 * 1000 },
   { label: "3h", ms: 3 * 60 * 60 * 1000 },
   { label: "6h", ms: 6 * 60 * 60 * 1000 },
@@ -34,7 +34,6 @@ const PRESETS: Preset[] = [
 ];
 
 type PresetMs = (typeof PRESETS)[number]["ms"];
-
 const LS_END_KEY = "lockdin_session_end";
 const LS_TOTAL_KEY = "lockdin_session_total";
 
@@ -44,16 +43,9 @@ function FormatTime(ms: number) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return `${String(hours).padStart(1, "0")}:${String(minutes).padStart(
-      2,
-      "0",
-    )}:${String(seconds).padStart(2, "0")}`;
-  }
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-    2,
-    "0",
-  )}`;
+  if (hours > 0)
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function GetTimeFromLocalStorage(key: string): number | null {
@@ -72,27 +64,23 @@ export default function FloatingClock() {
   const [sessionMs, setSessionMs] = useState<PresetMs>(PRESETS[0].ms);
   const [showBlockedContainer, setShowBlockedContainer] = useState(false);
 
+  const [closePopup, setClosePopup] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState(false);
+
   const [open, setOpen] = useState(false);
   const [sessionEnd, setSessionEnd] = useState<number | null>(null);
   const [sessionTotalMs, setSessionTotalMs] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Load session blocked websites
+  // Load blocked websites
   useEffect(() => {
-    const loadBlockedSites = async () => {
-      if (typeof window === "undefined") return;
-
-      const local = localStorage.getItem("session-blocked-website");
-      const localList = local ? JSON.parse(local) : [];
-
-      setSessionBlockedUrls(localList);
-      setTimeout(() => setShowBlockedContainer(true), 2000);
-    };
-    loadBlockedSites();
+    const local = localStorage.getItem("session-blocked-website");
+    setSessionBlockedUrls(local ? JSON.parse(local) : []);
+    setTimeout(() => setShowBlockedContainer(true), 2000);
   }, []);
 
-  // Restore or cleanup existing session
+  // Restore session
   useEffect(() => {
     const end = GetTimeFromLocalStorage(LS_END_KEY);
     const total = GetTimeFromLocalStorage(LS_TOTAL_KEY);
@@ -100,72 +88,61 @@ export default function FloatingClock() {
       setSessionEnd(end);
       if (total && total > 0) setSessionTotalMs(total);
     } else {
-      try {
-        localStorage.removeItem(LS_END_KEY);
-        localStorage.removeItem(LS_TOTAL_KEY);
-        sendBlockedSitesToExtension([], true);
-      } catch {}
+      localStorage.removeItem(LS_END_KEY);
+      localStorage.removeItem(LS_TOTAL_KEY);
+
+      sendBlockedSitesToExtension([], true);
     }
   }, []);
 
-  // ticking effect
+  // Ticking
   useEffect(() => {
     if (!sessionEnd) return;
     const i = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(i);
   }, [sessionEnd]);
 
-  const remainingMs = useMemo(() => {
-    if (!sessionEnd) return 0;
-    return Math.max(0, sessionEnd - Date.now());
-  }, [sessionEnd, tick]);
-
+  const remainingMs = useMemo(
+    () => Math.max(0, (sessionEnd || 0) - Date.now()),
+    [sessionEnd, tick],
+  );
   const active = sessionEnd !== null && remainingMs > 0;
 
   const progressPct = useMemo(() => {
     if (!active || !sessionTotalMs || sessionTotalMs <= 0) return 0;
     return Math.min(
       100,
-      Math.max(0, ((sessionTotalMs - remainingMs) / sessionTotalMs) * 100),
+      ((sessionTotalMs - remainingMs) / sessionTotalMs) * 100,
     );
   }, [active, sessionTotalMs, remainingMs]);
 
-  //  Auto-end session when timer reaches zero
+  // Auto-end session when timer reaches zero
   useEffect(() => {
-    if (!sessionEnd) return;
-    if (remainingMs > 0) return;
-    if (showCelebration) return;
-
+    if (!sessionEnd || remainingMs > 0 || showCelebration) return;
     setSessionEnd(null);
     setSessionTotalMs(null);
     setSessionBlockedUrls([]);
+
     localStorage.removeItem(LS_END_KEY);
     localStorage.removeItem(LS_TOTAL_KEY);
     localStorage.removeItem("session-blocked-website");
+
     sendBlockedSitesToExtension([], true);
-    setOpen(false);
-
     setShowCelebration(true);
-    const timeout = setTimeout(() => {
-      setShowCelebration(false);
-    }, 3000);
 
+    const timeout = setTimeout(() => setShowCelebration(false), 3000);
     return () => clearTimeout(timeout);
   }, [remainingMs, sessionEnd]);
 
   function persist(end: number, totalMs: number | null) {
-    try {
-      localStorage.setItem(LS_END_KEY, String(end));
-      if (totalMs && totalMs > 0) {
-        localStorage.setItem(LS_TOTAL_KEY, String(totalMs));
-      } else {
-        localStorage.removeItem(LS_TOTAL_KEY);
-      }
-    } catch {}
+    localStorage.setItem(LS_END_KEY, String(end));
+    if (totalMs && totalMs > 0)
+      localStorage.setItem(LS_TOTAL_KEY, String(totalMs));
+    else localStorage.removeItem(LS_TOTAL_KEY);
   }
 
   function startWithDuration(ms: number) {
-    if (sessionBlockedUrls.length == 0) return;
+    if (sessionBlockedUrls.length === 0) return;
     const end = Date.now() + ms;
     setSessionEnd(end);
     setSessionTotalMs(ms);
@@ -175,36 +152,45 @@ export default function FloatingClock() {
       "session-blocked-website",
       JSON.stringify(sessionBlockedUrls),
     );
-
     sendBlockedSitesToExtension(sessionBlockedUrls, true);
   }
 
   function endSession() {
-    if (!active || !sessionEnd) return;
-    const confirmEnd = confirm("End session early?");
+    if (!active) return;
+    setClosePopup(true);
+  }
+
+  // Confirm end
+  useEffect(() => {
     if (!confirmEnd) return;
     setSessionEnd(null);
     setSessionTotalMs(null);
     setSessionBlockedUrls([]);
+    setClosePopup(false);
+    setConfirmEnd(false);
 
     localStorage.removeItem(LS_END_KEY);
     localStorage.removeItem(LS_TOTAL_KEY);
     localStorage.removeItem("session-blocked-website");
 
     sendBlockedSitesToExtension([], true);
-  }
+  }, [confirmEnd]);
 
-  const endTimeDisplay = useMemo(() => {
-    if (!sessionEnd) return "";
-    return new Date(sessionEnd).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }, [sessionEnd]);
+  const endTimeDisplay = useMemo(
+    () =>
+      sessionEnd
+        ? new Date(sessionEnd).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "",
+    [sessionEnd],
+  );
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      {/* Session Dialog */}
+      <Dialog open={open && !closePopup} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button
             aria-label={
@@ -220,26 +206,25 @@ export default function FloatingClock() {
             }`}
           >
             {active ? (
-              <span className="text-xs font-medium" aria-hidden>
+              <span className="text-xs font-medium">
                 {FormatTime(remainingMs)}
               </span>
             ) : (
-              <AlarmClock className="h-5 w-5" aria-hidden />
+              <AlarmClock className="h-5 w-5" />
             )}
-            <span className="sr-only">
-              {active ? "Focus session active" : "Open focus timer"}
-            </span>
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-[420px]">
+        <DialogContent
+          className={`sm:max-w-[420px] ${closePopup ? "pointer-events-none opacity-50" : ""}`}
+        >
           <DialogHeader>
             <DialogTitle>
               {active ? "Focus Session Active" : "Start a LockdIn Session"}
             </DialogTitle>
             <DialogDescription>
               {active
-                ? "Stay focused until the session ends. You can end it early if needed."
+                ? "Stay focused until the session ends."
                 : "Pick a preset duration to stay focused."}
             </DialogDescription>
           </DialogHeader>
@@ -261,7 +246,7 @@ export default function FloatingClock() {
                 </div>
               </div>
 
-              {sessionTotalMs ? (
+              {sessionTotalMs && (
                 <div className="grid gap-2">
                   <div
                     className="bg-muted h-2 w-full overflow-hidden rounded-full"
@@ -284,12 +269,12 @@ export default function FloatingClock() {
                     <span>Complete</span>
                   </div>
                 </div>
-              ) : null}
+              )}
 
               {sessionBlockedUrls.length > 0 && showBlockedContainer && (
                 <motion.div
-                  initial={{ opacity: 0, filter: `blur(10px)` }}
-                  animate={{ opacity: 1, filter: `blur(0px)` }}
+                  initial={{ opacity: 0, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.3 }}
                   className="space-y-3"
                 >
@@ -304,7 +289,7 @@ export default function FloatingClock() {
                         variant="secondary"
                         className="flex items-center gap-1 px-2 py-1 transition-all duration-300 hover:bg-slate-50"
                       >
-                        <span className="text-xs">{url}</span>
+                        {url}
                       </Badge>
                     ))}
                   </div>
@@ -330,9 +315,7 @@ export default function FloatingClock() {
                   <Button
                     key={p.label}
                     variant="secondary"
-                    className={`${
-                      sessionMs == p.ms ? "border border-red-400" : ""
-                    } hover:border hover:border-red-300`}
+                    className={`${sessionMs == p.ms ? "border border-red-400" : ""} hover:border hover:border-red-300`}
                     onClick={() => setSessionMs(p.ms)}
                   >
                     <Play className="mr-2 h-4 w-4" />
@@ -341,7 +324,7 @@ export default function FloatingClock() {
                 ))}
               </div>
               <Button
-                disabled={sessionBlockedUrls.length == 0}
+                disabled={sessionBlockedUrls.length === 0}
                 onClick={() => startWithDuration(sessionMs)}
                 className="w-full bg-green-500 hover:bg-green-400"
               >
@@ -352,6 +335,7 @@ export default function FloatingClock() {
         </DialogContent>
       </Dialog>
 
+      {/* Celebration */}
       <AnimatePresence>
         {showCelebration && (
           <motion.div
@@ -370,7 +354,6 @@ export default function FloatingClock() {
               width={typeof window !== "undefined" ? window.innerWidth : 0}
               height={typeof window !== "undefined" ? window.innerHeight : 0}
             />
-
             <motion.h1
               initial={{ y: 30, opacity: 0, scale: 0.9 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
@@ -380,7 +363,6 @@ export default function FloatingClock() {
             >
               🎉 Focus Session Complete!
             </motion.h1>
-
             <motion.p
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -393,6 +375,15 @@ export default function FloatingClock() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ClosePopup Overlay */}
+      {closePopup && (
+        <ClosePopup
+          open={closePopup}
+          setOpen={setClosePopup}
+          setConfirmEnd={setConfirmEnd}
+        />
+      )}
     </>
   );
 }
