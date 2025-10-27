@@ -7,9 +7,11 @@ import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
 import { Button } from "../ui/button";
 import FloatingClock from "../FloatingClock";
 import { RefreshCw } from "lucide-react";
+import useMobileDevice from "@/hooks/useMobileDevice";
 
 export default function HeroSection() {
   const installed = useExtensionInstalled();
+  const isMobile = useMobileDevice();
 
   return (
     <div className="relative flex h-screen w-full flex-col items-center justify-center">
@@ -62,8 +64,37 @@ export default function HeroSection() {
         </motion.div>
       </motion.div>
 
-      {installed ? (
-        <FloatingClock />
+      {!isMobile ? (
+        installed ? (
+          <FloatingClock />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.6,
+              delay: 0.8,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+            className="from-background via-background/90 to-background/80 fixed right-8 bottom-8 flex items-center gap-3 rounded-xl border border-slate-200 bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm"
+          >
+            <motion.div
+              animate={{ rotate: [0, 20, -20, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <RefreshCw className="text-primary" size={20} />
+            </motion.div>
+
+            <div className="flex flex-col">
+              <h2 className="text-foreground text-sm font-medium">
+                Please reload after installing the extension.
+              </h2>
+              <p className="text-muted-foreground mt-1 text-xs">
+                (Your new extension powers will activate on reload!)
+              </p>
+            </div>
+          </motion.div>
+        )
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -84,11 +115,8 @@ export default function HeroSection() {
 
           <div className="flex flex-col">
             <h2 className="text-foreground text-sm font-medium">
-              Please reload after installing the extension.
+              Chrome extension are only available on Desktop.
             </h2>
-            <p className="text-muted-foreground mt-1 text-xs">
-              (Your new extension powers will activate on reload!)
-            </p>
           </div>
         </motion.div>
       )}
