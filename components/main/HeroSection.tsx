@@ -76,7 +76,7 @@ export default function HeroSection() {
               delay: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
-            className="from-background via-background/90 to-background/80 fixed right-8 bottom-8 flex items-center gap-3 rounded-xl border border-slate-200 bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm"
+            className="from-background via-background/90 to-background/80 fixed right-8 bottom-8 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm"
           >
             <motion.div
               animate={{ rotate: [0, 20, -20, 0] }}
@@ -104,15 +104,8 @@ export default function HeroSection() {
             delay: 0.8,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
-          className="from-background via-background/90 to-background/80 fixed right-8 bottom-8 flex items-center gap-3 rounded-xl border border-slate-200 bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm"
+          className="from-background via-background/90 to-background/80 fixed right-0 bottom-8 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-1.5 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm"
         >
-          <motion.div
-            animate={{ rotate: [0, 20, -20, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <RefreshCw className="text-primary" size={20} />
-          </motion.div>
-
           <div className="flex flex-col">
             <h2 className="text-foreground text-sm font-medium">
               Chrome extension are only available on Desktop.
