@@ -13,19 +13,22 @@ import { Button } from "@/components/ui/button";
 import { ShieldBan, X, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import {
-  FrequentlyBlockedWebsite,
-  getCachedMostFrequentlyBlockedSites,
-} from "./actions";
 import { toast } from "sonner";
 import sendBlockedSitesToExtension from "@/utils/sendBlockedListToExtension";
 import { cn } from "@/lib/utils";
 
+const predefinedWebsites = [
+  { name: "Facebook", url: "https://facebook.com", domain: "facebook.com" },
+  { name: "Instagram", url: "https://instagram.com", domain: "instagram.com" },
+  { name: "X", url: "https://x.com", domain: "x.com" },
+  { name: "YouTube", url: "https://youtube.com", domain: "youtube.com" },
+  { name: "Netflix", url: "https://netflix.com", domain: "netflix.com" },
+  { name: "Reddit", url: "https://reddit.com", domain: "reddit.com" },
+  { name: "LinkedIn", url: "https://linkedin.com", domain: "linkedin.com" },
+];
+
 export default function Blocker() {
   const [blockedUrls, setBlockedUrls] = useState<string[]>([]);
-  const [frequentlyBlockedWebsite, setFrequentlyBlockedWebsite] = useState<
-    FrequentlyBlockedWebsite[] | null
-  >(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -35,21 +38,6 @@ export default function Blocker() {
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   const MAX_BLOCKED_URLS = 8;
-
-  useEffect(() => {
-    const fetchFrequentlyBlockedWebsite = async () => {
-      setIsLoading(true);
-      try {
-        const result = await getCachedMostFrequentlyBlockedSites();
-        if (result) setFrequentlyBlockedWebsite(result);
-      } catch {
-        setError("Failed to load suggestions");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchFrequentlyBlockedWebsite();
-  }, []);
 
   useEffect(() => {
     const loadBlockedSites = async () => {
@@ -81,14 +69,18 @@ export default function Blocker() {
     url: string,
   ): { isValid: boolean; normalized: string } => {
     let trimmed = url.trim();
-    if (!/^https?:\/\//i.test(trimmed)) {
-      trimmed = "https://" + trimmed;
-    }
+    if (!/^https?:\/\//i.test(trimmed)) trimmed = "https://" + trimmed;
+
     try {
       const { hostname } = new URL(trimmed);
       const parts = hostname.split(".");
-      const normalized =
-        parts.length > 2 ? parts.slice(-2).join(".") : hostname;
+      let normalized = hostname;
+      if (parts.length > 2) {
+        normalized = parts.slice(-2).join(".");
+        if (/\.co\.uk$|\.gov\.uk$/.test(hostname)) {
+          normalized = parts.slice(-3).join(".");
+        }
+      }
       return { isValid: true, normalized };
     } catch {
       return { isValid: false, normalized: "" };
@@ -157,7 +149,7 @@ export default function Blocker() {
   };
 
   const handleInputFocus = () => {
-    if (frequentlyBlockedWebsite && frequentlyBlockedWebsite.length > 0) {
+    if (predefinedWebsites && predefinedWebsites.length > 0) {
       setShowSuggestions(true);
     }
   };
@@ -221,8 +213,8 @@ export default function Blocker() {
         </div>
 
         {showSuggestions &&
-          frequentlyBlockedWebsite &&
-          frequentlyBlockedWebsite.length > 0 && (
+          predefinedWebsites &&
+          predefinedWebsites.length > 0 && (
             <div
               ref={suggestionsRef}
               className="absolute top-full right-12 left-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
@@ -233,7 +225,7 @@ export default function Blocker() {
                   <strong>Common websites:</strong>
                 </p>
                 <div className="space-y-1">
-                  {frequentlyBlockedWebsite.map((website) => {
+                  {predefinedWebsites.map((website) => {
                     const { normalized } = grabDomainUrl(website.domain);
                     const isAlreadyBlocked = blockedUrls.includes(normalized);
 
