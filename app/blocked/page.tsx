@@ -1,14 +1,25 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { ShieldAlert, Home } from "lucide-react";
 
-export default function Blocked() {
+function BlockedContent() {
   const router = useRouter();
   const pathname = useSearchParams().get("from");
+
+  const [ready, setReady] = React.useState(false);
+  if (!ready) {
+    throw new Promise((resolve) => {
+      setTimeout(() => {
+        setReady(true);
+        resolve(true);
+      }, 20000); // simulate 20s loading delay
+    });
+  }
 
   return (
     <div className="flex h-screen items-center justify-center">
@@ -64,5 +75,21 @@ export default function Blocked() {
         </motion.section>
       </main>
     </div>
+  );
+}
+
+export default function Blocked() {
+  return (
+    <Suspense
+      fallback={
+        <div className="text-foreground flex h-screen flex-col items-center justify-center gap-4">
+          <p className="animate-pulse text-sm font-medium">
+            Loading blocked page...
+          </p>
+        </div>
+      }
+    >
+      <BlockedContent />
+    </Suspense>
   );
 }
