@@ -11,16 +11,6 @@ function BlockedContent() {
   const router = useRouter();
   const pathname = useSearchParams().get("from");
 
-  const [ready, setReady] = React.useState(false);
-  if (!ready) {
-    throw new Promise((resolve) => {
-      setTimeout(() => {
-        setReady(true);
-        resolve(true);
-      }, 20000); // simulate 20s loading delay
-    });
-  }
-
   return (
     <div className="flex h-screen items-center justify-center">
       <main className="text-foreground relative flex min-h-screen w-full items-center justify-center px-6">
