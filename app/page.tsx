@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="relative flex w-full flex-col items-center justify-center p-8">
+    <div className="flex min-h-screen flex-col justify-between">
       <HeroSection />
     </div>
   );

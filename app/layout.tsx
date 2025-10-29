@@ -39,18 +39,86 @@ const libre = Libre_Baskerville({
 export const metadata: Metadata = {
   metadataBase: new URL("https://lockdin.in"),
   title: {
-    default: "LockdIn Dashboard – Boost Focus & Productivity",
+    default: "LockdIn – Block Distracting Websites & Boost Focus",
     template: "%s | LockdIn Dashboard",
   },
   description:
-    "LockdIn Dashboard helps you manage blocked sites, monitor focus sessions, and stay productive with seamless integration to the LockdIn Chrome extension.",
+    "LockdIn helps you stay focused by blocking distracting websites, tracking your screen time, and boosting productivity. Manage your focus sessions with the LockdIn Chrome extension and dashboard — your ultimate tool for deep work and distraction-free productivity.",
   keywords: [
+    // 🔹 Core branding
     "LockdIn",
-    "productivity dashboard",
-    "focus tracker",
+    "LockdIn Dashboard",
+    "LockdIn Chrome Extension",
+
+    // 🔹 Productivity & focus
+    "productivity extension",
     "website blocker",
-    "chrome extension companion",
-    "time management",
+    "focus app",
+    "focus booster",
+    "distraction blocker",
+    "stay focused app",
+    "deep work tool",
+    "focus timer",
+    "Pomodoro alternative",
+    "digital wellbeing extension",
+    "focus productivity tool",
+    "productivity companion",
+
+    // 🔹 Chrome-related
+    "Chrome productivity extension",
+    "Chrome focus extension",
+    "Chrome website blocker",
+    "Chrome focus mode",
+    "best productivity Chrome extension",
+    "block distracting websites Chrome",
+    "Chrome extension for students",
+    "focus Chrome extension",
+
+    // 🔹 Time management
+    "time management app",
+    "screen time manager",
+    "study focus extension",
+    "student productivity tool",
+    "remote work productivity app",
+    "work from home focus app",
+    "focus and study tool",
+    "time tracking dashboard",
+
+    // 🔹 Problem-solving / user intent
+    "how to stop wasting time online",
+    "how to block distracting websites",
+    "tools to stay focused while studying",
+    "reduce procrastination",
+    "apps to block social media",
+    "stay productive online Chrome extension",
+    "how to manage screen time on Chrome",
+    "how to improve focus and productivity",
+    "extension to stay focused",
+    "tools to fight procrastination",
+
+    // 🔹 Behavior / mindset
+    "self discipline app",
+    "mindful productivity",
+    "digital detox app",
+    "concentration booster",
+    "distraction-free workflow",
+    "deep work productivity",
+    "habit tracker extension",
+    "healthy work routine",
+    "focus habit builder",
+    "creator productivity tool",
+
+    // 🔹 Lifestyle & background
+    "modern productivity dashboard",
+    "clean minimalist UI",
+    "modern focus app",
+    "responsive productivity web app",
+    "privacy friendly extension",
+    "intuitive dashboard experience",
+    "motivational focus extension",
+    "study focus Chrome extension",
+    "work focus dashboard",
+    "focus session tracker",
   ],
   authors: [{ name: "Devesh Chandra" }],
   creator: "LockdIn",
@@ -71,29 +139,29 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://lockdin.in",
     siteName: "LockdIn",
-    title: "LockdIn Dashboard – Boost Focus & Productivity",
+    title: "LockdIn – Block Distractions & Boost Productivity",
     description:
-      "A productivity dashboard to manage and sync your LockdIn Chrome extension settings.",
+      "Stay focused and productive with LockdIn — a Chrome extension and dashboard that helps you block time-wasting websites and manage your focus sessions effortlessly.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "LockdIn Dashboard",
+        alt: "LockdIn – Productivity Dashboard",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "LockdIn Dashboard – Boost Focus & Productivity",
+    title: "LockdIn – Boost Your Focus & Block Distractions",
     description:
-      "Manage focus sessions, blocked sites, and productivity insights with LockdIn Dashboard — the web companion for your Chrome extension.",
+      "Enhance your productivity with LockdIn — block distracting sites, track your focus, and stay on task with our Chrome extension and web dashboard.",
     images: ["/og-image.png"],
   },
   alternates: {
     canonical: "https://lockdin.in",
   },
-  category: "productivity",
+  category: "Productivity",
   applicationName: "LockdIn Dashboard",
 };
 
@@ -108,9 +176,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${inter.variable} ${jakarta.variable} ${libre.variable}`}
     >
-      <body className="bg-gray-50 text-gray-900 antialiased">
+      <body className="min-h-screen antialiased">
         <Overlay />
-        <main className="relative z-10 min-h-screen">{children}</main>
+        <main className="relative z-10">{children}</main>
         <Toaster richColors position="bottom-center" />
       </body>
       <Analytics />

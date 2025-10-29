@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import ErrorPage from "@/components/ErrorPage";
+import ErrorPage from "@/components/Error/ErrorPage";
 
 export default function ErrorWrapper() {
   return (

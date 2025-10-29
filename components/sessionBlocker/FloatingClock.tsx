@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { AlarmClock, Play, X } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
-import { Separator } from "./ui/separator";
-import { Badge } from "./ui/badge";
+} from "../ui/dialog";
+import { Separator } from "../ui/separator";
+import { Badge } from "../ui/badge";
 import SessionBlocker from "./SessionBlocker";
 import sendBlockedSitesToExtension from "@/utils/sendBlockedListToExtension";
 import Confetti from "react-confetti";
@@ -200,7 +200,7 @@ export default function FloatingClock() {
                 : "Start a focus session"
             }
             size="icon"
-            className={`fixed right-8 bottom-8 h-12 w-12 cursor-pointer rounded-full shadow-lg transition-transform hover:scale-105 ${
+            className={`fixed right-8 bottom-8 z-20 h-12 w-12 cursor-pointer rounded-full shadow-lg transition-transform hover:scale-105 ${
               active
                 ? "bg-primary text-primary-foreground ring-primary/40 animate-pulse ring-2"
                 : "bg-primary text-primary-foreground hover:bg-primary/90"

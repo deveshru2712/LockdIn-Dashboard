@@ -6,9 +6,10 @@ import Footer from "./Footer";
 import Header from "./Header";
 import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
 import { Button } from "../ui/button";
-import FloatingClock from "../FloatingClock";
+import FloatingClock from "../sessionBlocker/FloatingClock";
 import { RefreshCw } from "lucide-react";
 import useMobileDevice from "@/hooks/useMobileDevice";
+import Link from "next/link";
 
 export default function HeroSection() {
   const installed = useExtensionInstalled();
@@ -43,7 +44,6 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.35 }}
           className="flex w-full items-center justify-center"
         >
-          {/* Desktop View */}
           {!isMobile ? (
             installed ? (
               <Blocker />
@@ -62,7 +62,6 @@ export default function HeroSection() {
               </div>
             )
           ) : (
-            /* Minimal Mobile Message */
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -104,7 +103,7 @@ export default function HeroSection() {
               delay: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
-            className="from-background via-background/90 to-background/80 fixed right-6 bottom-4 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm max-sm:right-4"
+            className="from-background via-background/90 to-background/80 fixed right-6 bottom-8 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm max-sm:right-4"
           >
             <motion.div
               animate={{ rotate: [0, 20, -20, 0] }}
@@ -120,6 +119,20 @@ export default function HeroSection() {
             </div>
           </motion.div>
         ))}
+
+      <footer className="bg-background/80 border-border fixed bottom-0 left-0 w-full border-t py-3 backdrop-blur-sm">
+        <div className="flex items-center justify-center gap-2 text-center">
+          <p className="text-muted-foreground text-sm">Made with ❤️ by</p>
+          <Link
+            href="https://x.com/deveshru2712"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-medium transition-colors hover:underline"
+          >
+            Devesh Chandra
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }
