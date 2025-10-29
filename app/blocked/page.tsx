@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { ShieldAlert, Home } from "lucide-react";
 
 export default function Blocked() {
   const router = useRouter();
+  const pathname = useSearchParams().get("from");
 
   return (
     <div className="flex h-screen items-center justify-center">
@@ -29,7 +30,7 @@ export default function Blocked() {
             </motion.div>
 
             <h1 className="text-2xl font-semibold tracking-tight">
-              <strong>Site is Blocked</strong>
+              <strong>{pathname} is Blocked</strong>
             </h1>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
               <strong>Lockdin</strong> has blocked this{" "}
