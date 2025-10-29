@@ -103,7 +103,7 @@ export default function HeroSection() {
               delay: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
-            className="from-background via-background/90 to-background/80 fixed right-6 bottom-8 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm max-sm:right-4"
+            className="from-background via-background/90 to-background/80 fixed right-6 bottom-8 z-20 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm max-sm:right-4"
           >
             <motion.div
               animate={{ rotate: [0, 20, -20, 0] }}
@@ -120,7 +120,16 @@ export default function HeroSection() {
           </motion.div>
         ))}
 
-      <footer className="bg-background/80 border-border fixed bottom-0 left-0 w-full border-t py-3 backdrop-blur-sm">
+      <motion.footer
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.7,
+          delay: 1.2,
+          ease: [0.25, 0.46, 0.45, 0.94],
+        }}
+        className="bg-background/80 border-border fixed bottom-0 left-0 w-full border-t py-3 backdrop-blur-sm"
+      >
         <div className="flex items-center justify-center gap-2 text-center">
           <p className="text-muted-foreground text-sm">Made with ❤️ by</p>
           <Link
@@ -132,7 +141,7 @@ export default function HeroSection() {
             Devesh Chandra
           </Link>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
