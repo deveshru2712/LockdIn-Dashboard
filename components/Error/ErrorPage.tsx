@@ -4,19 +4,13 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import {
-  AlertTriangle,
-  Home,
-  RefreshCw,
-  Lock,
-  XCircle,
-  Globe,
-} from "lucide-react";
+import { AlertTriangle, Home, RefreshCw, XCircle } from "lucide-react";
 
 interface ErrorPageProps {
   title?: string;
   message?: string;
-  icon?: "alert" | "auth" | "network" | "fatal";
+  icon?: "alert" | "fatal";
+  error?: Error | string | null;
   primaryAction?: {
     label: string;
     onClick: () => void;
@@ -29,8 +23,9 @@ interface ErrorPageProps {
 
 export default function ErrorPage({
   title = "Something Went Wrong",
-  message = "Oops! We couldn’t load this page. It may be a temporary glitch or a broken link.",
+  message = "An unexpected error occurred. Please try again later.",
   icon = "alert",
+  error = null,
   primaryAction,
   secondaryAction,
 }: ErrorPageProps) {
@@ -38,25 +33,27 @@ export default function ErrorPage({
 
   const IconMap = {
     alert: AlertTriangle,
-    auth: Lock,
-    network: Globe,
     fatal: XCircle,
   };
-
   const SelectedIcon = IconMap[icon] ?? AlertTriangle;
 
-  return (
-    <main className="from-background to-secondary/30 text-foreground relative flex min-h-screen items-center justify-center bg-gradient-to-b px-6">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="bg-destructive/10 absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
-      </div>
+  const isProd = process.env.NODE_ENV === "production";
+  const internalMessage =
+    !isProd && error
+      ? typeof error === "string"
+        ? error
+        : error.message
+      : null;
 
+  return (
+    <main className="text-foreground relative flex min-h-screen items-center justify-center px-6">
       <motion.section
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="bg-card relative z-10 w-full max-w-md rounded-2xl border p-8 shadow-lg backdrop-blur-sm"
       >
+        {/* header */}
         <header className="text-center">
           <motion.div
             initial={{ rotate: -10, scale: 0.9 }}
@@ -71,8 +68,15 @@ export default function ErrorPage({
           <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
             {message}
           </p>
+
+          {internalMessage && (
+            <pre className="bg-secondary/50 text-muted-foreground mt-3 rounded-md p-2 text-left text-xs whitespace-pre-wrap">
+              {internalMessage}
+            </pre>
+          )}
         </header>
 
+        {/* actions */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,7 +116,7 @@ export default function ErrorPage({
           </div>
 
           <footer className="text-muted-foreground mt-4 text-center text-xs">
-            If the issue persists please{" "}
+            If the issue persists, please{" "}
             <span
               className="text-foreground cursor-pointer underline underline-offset-2"
               onClick={() => router.push("https://x.com/deveshru2712")}

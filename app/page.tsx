@@ -12,6 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
+  throw new Error("fucking hell na...");
+
   return (
     <div className="flex min-h-screen flex-col justify-between">
       <HeroSection />
