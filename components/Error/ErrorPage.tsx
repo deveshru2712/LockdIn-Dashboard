@@ -88,26 +88,10 @@ export default function ErrorPage({
               variant="default"
               className="w-full sm:w-auto"
               onClick={
-                primaryAction ? primaryAction.onClick : () => router.refresh()
+                primaryAction ? primaryAction.onClick : () => router.push("/")
               }
             >
               {primaryAction?.label ?? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-                </>
-              )}
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={
-                secondaryAction
-                  ? secondaryAction.onClick
-                  : () => router.push("/")
-              }
-            >
-              {secondaryAction?.label ?? (
                 <>
                   <Home className="mr-2 h-4 w-4" /> Go Home
                 </>
