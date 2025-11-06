@@ -31,7 +31,11 @@ function BlockedContent() {
             </motion.div>
 
             <h1 className="text-2xl font-semibold tracking-tight">
-              <strong>{pathname} is Blocked</strong>
+              {pathname ? (
+                <strong>{pathname} is Blocked</strong>
+              ) : (
+                <strong>This Website is Blocked</strong>
+              )}
             </h1>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
               <strong>Lockdin</strong> has blocked this{" "}
