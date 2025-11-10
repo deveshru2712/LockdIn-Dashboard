@@ -53,11 +53,8 @@ export default function HeroSection() {
                   size="lg"
                   aria-label="Install browser extension"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/80 cursor-pointer px-6 py-3 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                  onClick={() =>
-                    window.open("https://chromewebstore.google.com/", "_blank")
-                  }
                 >
-                  Install extension
+                  Comming Soon !{/* Install extension */}
                 </Button>
               </div>
             )
@@ -91,7 +88,7 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Floating Elements — desktop only */}
-      {!isMobile &&
+      {/* {!isMobile &&
         (installed ? (
           <FloatingClock />
         ) : (
@@ -118,7 +115,7 @@ export default function HeroSection() {
               </h2>
             </div>
           </motion.div>
-        ))}
+        ))} */}
 
       <motion.footer
         initial={{ opacity: 0, y: 40 }}
