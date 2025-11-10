@@ -9,7 +9,6 @@ import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
 import FloatingClock from "../sessionBlocker/FloatingClock";
 import { RefreshCw } from "lucide-react";
 import useMobileDevice from "@/hooks/useMobileDevice";
-import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
   const installed = useExtensionInstalled();
@@ -49,13 +48,13 @@ export default function HeroSection() {
               <Blocker />
             ) : (
               <div className="flex w-full items-center justify-center">
-                <link
+                <Link
                   href="https://chromewebstore.google.com/detail/lockdin/anlmepahaebifigeidkohnpipgofnfoh?authuser=0&hl=en"
                   aria-label="Install browser extension"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/80 cursor-pointer px-6 py-3 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   Install extension
-                </link>
+                </Link>
               </div>
             )
           ) : (
