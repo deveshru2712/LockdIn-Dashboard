@@ -1,15 +1,15 @@
 "use client";
 
 import { motion } from "motion/react";
+import Link from "next/link";
 import Blocker from "./Blocker/Blocker";
 import Footer from "./Footer";
 import Header from "./Header";
 import { useExtensionInstalled } from "@/hooks/useExtensionInstalled";
-import { Button } from "../ui/button";
 import FloatingClock from "../sessionBlocker/FloatingClock";
 import { RefreshCw } from "lucide-react";
 import useMobileDevice from "@/hooks/useMobileDevice";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
   const installed = useExtensionInstalled();
@@ -49,13 +49,13 @@ export default function HeroSection() {
               <Blocker />
             ) : (
               <div className="flex w-full items-center justify-center">
-                <Button
-                  size="lg"
+                <link
+                  href="https://chromewebstore.google.com/detail/lockdin/anlmepahaebifigeidkohnpipgofnfoh?authuser=0&hl=en"
                   aria-label="Install browser extension"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/80 cursor-pointer px-6 py-3 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
-                  Comming Soon !{/* Install extension */}
-                </Button>
+                  Install extension
+                </link>
               </div>
             )
           ) : (
@@ -88,7 +88,7 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Floating Elements — desktop only */}
-      {/* {!isMobile &&
+      {!isMobile &&
         (installed ? (
           <FloatingClock />
         ) : (
@@ -115,7 +115,7 @@ export default function HeroSection() {
               </h2>
             </div>
           </motion.div>
-        ))} */}
+        ))}
 
       <motion.footer
         initial={{ opacity: 0, y: 40 }}
