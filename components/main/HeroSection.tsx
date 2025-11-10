@@ -51,7 +51,7 @@ export default function HeroSection() {
                 <Link
                   href="https://chromewebstore.google.com/detail/lockdin/anlmepahaebifigeidkohnpipgofnfoh?authuser=0&hl=en"
                   aria-label="Install browser extension"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/80 cursor-pointer px-6 py-3 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="rounded-sm bg-black px-3 py-2 font-semibold text-white"
                 >
                   Install extension
                 </Link>
