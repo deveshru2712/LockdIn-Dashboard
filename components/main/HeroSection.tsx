@@ -16,6 +16,16 @@ export default function HeroSection() {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center py-16 sm:py-0">
+      {/* SEO H1 */}
+      <h1 className="sr-only">LockdIn – Focus and Productivity Dashboard</h1>
+
+      {/* SEO description */}
+      <p className="sr-only">
+        LockdIn helps you stay focused by blocking distracting websites and
+        managing your productive time using a powerful browser extension and
+        dashboard.
+      </p>
+
       {/* Animated Container */}
       <motion.div
         initial={{ filter: "blur(20px)", opacity: 0, y: 20 }}
@@ -50,7 +60,7 @@ export default function HeroSection() {
               <div className="flex w-full items-center justify-center">
                 <Link
                   href="https://chromewebstore.google.com/detail/lockdin/anlmepahaebifigeidkohnpipgofnfoh?authuser=0&hl=en"
-                  aria-label="Install browser extension"
+                  aria-label="Install LockdIn browser extension"
                   className="rounded-sm bg-black px-3 py-2 font-semibold text-white"
                 >
                   Install extension
@@ -101,6 +111,8 @@ export default function HeroSection() {
             }}
             className="from-background via-background/90 to-background/80 fixed right-6 bottom-8 z-20 flex items-center gap-3 rounded-md border bg-gradient-to-r px-5 py-4 shadow-[0_3px_10px_rgb(0,0,0,0.15)] backdrop-blur-sm max-sm:right-4"
           >
+            <span className="sr-only">Extension installation reminder</span>
+
             <motion.div
               animate={{ rotate: [0, 20, -20, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}

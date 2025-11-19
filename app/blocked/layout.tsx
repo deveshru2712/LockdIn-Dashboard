@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "LockdIn",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://lockdin.in/og-image.png",
         width: 1200,
         height: 630,
         alt: "LockdIn Site Blocked",
@@ -33,6 +33,7 @@ export const metadata: Metadata = {
     title: "Site Blocked - LockdIn",
     description:
       "This site has been blocked by LockdIn to help you stay focused. Manage your blocklist in the dashboard.",
+    images: ["https://lockdin.in/og-image.png"],
   },
 };
 

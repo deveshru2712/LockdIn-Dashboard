@@ -7,7 +7,15 @@ export const metadata: Metadata = {
   description:
     "LockdIn helps you stay focused by blocking distracting websites. Manage your productivity with our powerful dashboard and browser extension.",
   alternates: {
-    canonical: "https://lockdin.in",
+    canonical: "https://lockdin.in/",
+  },
+  openGraph: {
+    title: "LockdIn Dashboard - Stay Focused and Productive",
+    description:
+      "LockdIn helps you stay focused by blocking distracting websites. Boost productivity with our dashboard and browser extension.",
+    url: "https://lockdin.in/",
+    siteName: "LockdIn",
+    type: "website",
   },
 };
 
