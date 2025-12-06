@@ -4,9 +4,24 @@ export function useExtensionInstalled() {
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setInstalled(!!window.__BLOCKER_EXTENSION_INSTALLED);
+    if (typeof window === "undefined") return;
+
+    if (window.__BLOCKER_EXTENSION_INSTALLED) {
+      setInstalled(true);
+      return;
     }
+
+    const handler = () => setInstalled(true);
+    window.addEventListener("blocker-extension-installed", handler);
+
+    const timeout = setTimeout(() => {
+      setInstalled(false);
+    }, 300);
+
+    return () => {
+      window.removeEventListener("blocker-extension-installed", handler);
+      clearTimeout(timeout);
+    };
   }, []);
 
   return installed;
