@@ -14,13 +14,8 @@ export function useExtensionInstalled() {
     const handler = () => setInstalled(true);
     window.addEventListener("blocker-extension-installed", handler);
 
-    const timeout = setTimeout(() => {
-      setInstalled(false);
-    }, 300);
-
     return () => {
       window.removeEventListener("blocker-extension-installed", handler);
-      clearTimeout(timeout);
     };
   }, []);
 
